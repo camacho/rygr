@@ -44,7 +44,7 @@ Server:
 The thick client is supported by a simple Express server. It uses middleware
 options to properly load a build of the client and support and push state URLs.
 The server can also be extended with additional functionality (like an API) with
-no intereference.
+no problems.
 
 Build Tool
 ---
