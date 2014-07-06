@@ -2,7 +2,7 @@
 path = require 'path'
 _ = require 'underscore'
 express = require 'express'
-(config = require 'config').initialize? 'sdk_gateway'
+config = require 'config'
 
 ext = path.extname __filename
 options =

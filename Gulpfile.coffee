@@ -54,18 +54,14 @@ gulp.task 'scripts', ->
   map = true
   dest = config.client.build.assets
 
-  js = $.filter '**/*.js'
-
-  gulp.src("#{ config.client.src.scripts }/**")
+  gulp.src("#{ config.client.src.scripts }/**/*.coffee")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed dest)
-    .pipe(js)
     .pipe($.preprocess context: ENV: ENV)
     .pipe($.coffeelint optFile: './.coffeelintrc')
     .pipe($.coffeelint.reporter())
     .pipe($.cond map, gulp.dest dest)
     .pipe($.coffee bare: true, sourceMap: map)
-    .pipe(js.restore())
     .pipe(gulp.dest dest)
 
 gulp.task 'sass', ['copy static', 'rename css'], ->

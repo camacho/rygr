@@ -11,7 +11,6 @@
   ],
   "dependencies": {
     "requirejs": "~2.1.11",
-    "jquery": "~2.1.0",
-    "haml_coffee_assets": "https://github.com/netzpirat/haml_coffee_assets"
+    "jquery": "~2.1.0"
   }
 }
