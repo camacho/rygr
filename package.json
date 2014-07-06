@@ -1,0 +1,44 @@
+{
+  "name": "cement",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Bedrock",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/crashlytics/bedrock.git"
+  },
+  "author": "Patrick Camacho",
+  "bugs": {
+    "url": "https://github.com/crashlytics/bedrock/issues"
+  },
+  "devDependencies": {
+    "config": "https://npm.fury.io/aVfGHNDwxe6175nGVzAr/crashlytics/config/-/0.3.0.tgz",
+    "gulp-bower-files": "~0.2.1",
+    "gulp-changed": "^0.3.0",
+    "gulp-clean": "^0.2.4",
+    "gulp-coffee": "^1.4.3",
+    "gulp-coffeelint": "~0.3.2",
+    "gulp-cond": "0.0.2",
+    "gulp-filter": "^0.4.1",
+    "gulp-hamlc": "git://github.com/crashlytics/gulp-hamlc",
+    "gulp-livereload": "^1.2.0",
+    "gulp-load-plugins": "~0.5.0",
+    "gulp-notify": "^1.2.6",
+    "gulp-plumber": "^0.5.6",
+    "gulp-preprocess": "^1.0.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-sass": "^0.7.2",
+    "node-bourbon": "^1.2.3",
+    "run-sequence": "~0.3.6",
+    "tiny-lr": "0.0.5",
+    "underscore": "~1.6.0",
+    "underscore.string": "~2.3.3",
+    "utils": "https://npm.fury.io/aVfGHNDwxe6175nGVzAr/crashlytics/utils/-/0.4.0.tgz"
+  },
+  "dependencies": {
+    "coffee-script": "^1.7.1",
+    "express": "^4.5.0",
+    "gulp": "^3.8.5",
+    "nodemon": "^1.2.1"
+  }
+}

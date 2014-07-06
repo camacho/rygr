@@ -1,0 +1,17 @@
+{
+  "name": "Bedrock",
+  "version": "0.0.0",
+  "homepage": "https://github.com/crashlytics/bedrock",
+  "author": "Patrick Camacho",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.11",
+    "jquery": "~2.1.0",
+    "haml_coffee_assets": "https://github.com/netzpirat/haml_coffee_assets"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "root": "client",
+  "src": {
+    "root": "client/src",
+    "pages": "client/src/pages",
+    "styles": "client/src/stylesheets",
+    "static": "client/src/static",
+    "scripts": "client/src/scripts"
+  },
+  "build": {
+    "root": "client/build",
+    "assets": "client/build/assets"
+  }
+}

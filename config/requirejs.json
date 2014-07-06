@@ -1,0 +1,18 @@
+{
+  "catchError": {
+    "define": true
+  },
+  "paths": {
+    "jquery": "jquery/dist/jquery",
+    "underscore": "underscore/underscore",
+    "underscore.string": "underscore.string/lib/underscore.string",
+    "backbone": "backbone/backbone",
+    "backbone.wreqr": "backbone.wreqr/lib/backbone.wreqr",
+    "backbone.babysitter": "backbone.babysitter/lib/backbone.babysitter",
+    "marionette": "marionette/lib/core/amd/backbone.marionette",
+    "modernizr": "modernizr/modernizr",
+    "jquery.cookie": "jquery.cookie/jquery.cookie",
+    "hamlcoffee": "shared/helpers/hamlcoffee"
+  },
+  "baseUrl": "/assets"
+}
