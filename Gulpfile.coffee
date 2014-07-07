@@ -39,7 +39,7 @@ gulp.task 'ensure build dir', ensureDir.bind null, config.client.build.root
 # Copy static
 # ------------------------------------------------------------------------------
 gulp.task 'copy static', ->
-  gulp.src("#{ config.client.src }/static/**")
+  gulp.src("#{ config.client.src.static }/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
     .pipe gulp.dest config.client.build.root
