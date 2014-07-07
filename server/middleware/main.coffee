@@ -14,7 +14,7 @@ module.exports = (app) ->
 
   utilities = [
     middleware.assets app
-    middleware.index app
+    middleware.client app
     middleware.missing app
     middleware.error app
   ]

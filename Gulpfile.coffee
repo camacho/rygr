@@ -8,7 +8,6 @@ runSequence = require 'run-sequence'
 path = require 'path'
 fs = require 'fs'
 _ = require 'underscore'
-nodemon = require 'nodemon'
 
 ENV = process.env.NODE_ENV or 'development'
 (config = require 'config').initialize()
@@ -100,6 +99,8 @@ gulp.task 'pages', ->
 # Server
 # ------------------------------------------------------------------------------
 gulp.task 'server', ->
+  nodemon = require 'nodemon'
+
   nodemon
     script: config.server.main
     watch: config.server.root
