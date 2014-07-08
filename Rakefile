@@ -9,5 +9,5 @@ end
 
 task :update do
   `npm install`
-  `bower install`
+  `bower install --allow-root`
 end
