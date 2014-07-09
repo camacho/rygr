@@ -11,5 +11,9 @@
       requirejs = #{ JSON.stringify @requirejs }
 
     %script{data-main: '/assets/main.js', src: '/assets/requirejs/require.js' }
+
     - if @livereload.port?
-      %script{src: "http://localhost:#{ @livereload.port }/livereload.js"}
+      :javascript
+        lr_host = 'http://' + (location.host || 'localhost').split(':')[0]
+        lr_port = #{ @livereload.port }
+        document.write('<script src="' + lr_host + ':' + lr_port + '/livereload.js?snipver=1"></' + 'script>')
