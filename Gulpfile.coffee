@@ -69,8 +69,10 @@ gulp.task 'scripts', ->
 
 gulp.task 'sass', ['copy static', 'rename css'], ->
   gulp.src("#{ config.client.src.styles }/main.scss")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.sass includePaths: require('node-bourbon').with config.client.build.root)
+    .pipe($.sass
+      onError: alertError
+      includePaths: require('node-bourbon').with config.client.build.root
+    )
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'rename css', ->
