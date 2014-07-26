@@ -10,7 +10,8 @@ fs = require 'fs'
 _ = require 'underscore'
 
 ENV = process.env.NODE_ENV or 'development'
-(config = require 'config').initialize()
+{config} = require 'bedrock-utils'
+config.initialize 'config/*.json', debug: true
 
 # ------------------------------------------------------------------------------
 # Custom vars and methods
@@ -26,7 +27,7 @@ ensureDir = (dir, cb) ->
 cleanDir = (dir) ->
   gulp.src("#{ dir }/*", read: false)
     .pipe($.plumber errorHandler: alertError)
-    .pipe $.clean force: true
+    .pipe $.rimraf force: true
 
 # ------------------------------------------------------------------------------
 # Directory management
@@ -44,7 +45,10 @@ gulp.task 'copy static', ->
     .pipe gulp.dest config.client.build.root
 
 gulp.task 'copy bower', ->
-  $.bowerFiles().pipe gulp.dest config.client.build.assets
+  mainBowerFiles = require 'main-bower-files'
+
+  gulp.src(mainBowerFiles())
+    .pipe gulp.dest config.client.build.assets
 
 # ------------------------------------------------------------------------------
 # Compile assets
@@ -78,7 +82,7 @@ gulp.task 'sass', ['copy static', 'rename css'], ->
 gulp.task 'rename css', ->
   gulp.src("#{ config.client.src.styles }/**/*.css")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.clean())
+    .pipe($.rimraf())
     .pipe($.rename extname: '.scss')
     .pipe(gulp.dest config.client.build.assets)
 
@@ -86,7 +90,7 @@ gulp.task 'templates', ->
   gulp.src("#{ config.client.src.scripts }/**/*.hamlc")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.assets)
-    .pipe($.hamlc placement: 'amd')
+    .pipe($.hamlCoffee js: true, placement: 'amd')
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'pages', ->
@@ -98,7 +102,7 @@ gulp.task 'pages', ->
   gulp.src(files)
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
-    .pipe($.hamlc target: 'html', ext: '.html', context: config)
+    .pipe($.hamlCoffee locals: config)
     .pipe(gulp.dest config.client.build.root)
 
 # ------------------------------------------------------------------------------

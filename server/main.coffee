@@ -1,13 +1,12 @@
-config = require 'config'
+{file, config} = require 'bedrock-utils'
 path = require 'path'
 express = require 'express'
 _ = require 'underscore'
 
-config.initialize? null, override: path.join __dirname, '..', 'config'
+config.initialize? ['config/*.json', "#{path.join(__dirname, '..', 'config')}/*.json"]
 
 middleware = require './middleware/main'
 
-{file} = require 'utils'
 initializerOptions = extension: path.extname __filename
 file.requireDirectory path.join(__dirname, 'initializers'), initializerOptions
 

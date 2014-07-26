@@ -72,7 +72,8 @@ livereload, and the server. Feel free to add additional configs. They will
 automatically be read in and can be access via their filename as follows:
 
 ```coffee
-config = require 'config'
+{config} = require 'bedrock-utils'
+config.initialize 'config/*.json'
 console.log config.server.port
 #8888
 ```
