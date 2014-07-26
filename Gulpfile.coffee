@@ -20,26 +20,22 @@ alertError = $.notify.onError (error) ->
   message = error?.message or error?.toString() or 'Something went wrong'
   "Error: #{ message }"
 
-ensureDir = (dir, cb) ->
+# ------------------------------------------------------------------------------
+# Directory management
+# ------------------------------------------------------------------------------
+gulp.task 'clean build', ->
+  dir = config.client.build.root
   fs.mkdirSync dir unless fs.existsSync dir
-  cb null
 
-cleanDir = (dir) ->
   gulp.src("#{ dir }/*", read: false)
     .pipe($.plumber errorHandler: alertError)
     .pipe $.rimraf force: true
 
 # ------------------------------------------------------------------------------
-# Directory management
+# Copy public
 # ------------------------------------------------------------------------------
-gulp.task 'clean build', cleanDir.bind null, config.client.build.root
-gulp.task 'ensure build dir', ensureDir.bind null, config.client.build.root
-
-# ------------------------------------------------------------------------------
-# Copy static
-# ------------------------------------------------------------------------------
-gulp.task 'copy static', ->
-  gulp.src("#{ config.client.src.static }/**")
+gulp.task 'public', ->
+  gulp.src("#{ config.client.src.public }/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
     .pipe gulp.dest config.client.build.root
@@ -54,28 +50,31 @@ gulp.task 'copy bower', ->
 # Compile assets
 # ------------------------------------------------------------------------------
 gulp.task 'scripts', ->
-  map = true
-  dest = config.client.build.assets
-
   coffeeFilter = $.filter '**/*.coffee'
+  hamlcFilter = $.filter '**/*.hamlc'
 
   gulp.src("#{ config.client.src.scripts }/**")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed dest)
+    .pipe($.changed config.client.build.assets)
     .pipe($.preprocess context: ENV: ENV)
     .pipe(coffeeFilter)
     .pipe($.coffeelint optFile: './.coffeelintrc')
     .pipe($.coffeelint.reporter())
-    .pipe($.cond map, gulp.dest dest)
-    .pipe($.coffee bare: true, sourceMap: map)
+    .pipe($.cond config.client.scripts.map, gulp.dest config.client.build.assets)
+    .pipe($.coffee bare: true, sourceMap: config.client.scripts.map)
     .pipe(coffeeFilter.restore())
-    .pipe(gulp.dest dest)
+    .pipe(hamlcFilter)
+    .pipe($.hamlCoffee js: true, placement: 'amd')
+    .pipe(hamlcFilter.restore())
+    .pipe(gulp.dest config.client.build.assets)
 
-gulp.task 'sass', ['copy static', 'rename css'], ->
+gulp.task 'sass', ['public', 'images', 'rename css'], ->
   gulp.src("#{ config.client.src.styles }/main.scss")
     .pipe($.sass
       onError: alertError
       includePaths: require('node-bourbon').with config.client.build.root
+      imagePath: config.client.sass.imagePath
+      sourceMap: config.client.sass.sourceMap
     )
     .pipe(gulp.dest config.client.build.assets)
 
@@ -86,23 +85,25 @@ gulp.task 'rename css', ->
     .pipe($.rename extname: '.scss')
     .pipe(gulp.dest config.client.build.assets)
 
-gulp.task 'templates', ->
-  gulp.src("#{ config.client.src.scripts }/**/*.hamlc")
+gulp.task 'images', ->
+  gulp.src("#{ config.client.src.images }/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.assets)
-    .pipe($.hamlCoffee js: true, placement: 'amd')
+    .pipe($.imagemin())
     .pipe(gulp.dest config.client.build.assets)
 
-gulp.task 'pages', ->
-  files = [
-    "#{ config.client.src.pages }/**/*.hamlc"
-    "!#{ config.client.src.pages }/**/_*.hamlc"
-  ]
+gulp.task 'html', ->
+  hamlcFilter = $.filter '**/*.hamlc'
 
-  gulp.src(files)
+  gulp.src([
+    "#{ config.client.src.html }/**"
+    "!#{ config.client.src.html }/**/_*.hamlc"
+  ])
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
+    .pipe(hamlcFilter)
     .pipe($.hamlCoffee locals: config)
+    .pipe(hamlcFilter.restore())
     .pipe(gulp.dest config.client.build.root)
 
 # ------------------------------------------------------------------------------
@@ -126,7 +127,7 @@ gulp.task 'server', ->
 # ------------------------------------------------------------------------------
 gulp.task 'build', (cb) ->
   sequence = [
-    ['copy bower', 'scripts', 'templates', 'copy static', 'pages', 'sass']
+    ['copy bower', 'scripts', 'public', 'html', 'sass']
     cb
   ]
   runSequence sequence...
@@ -134,17 +135,16 @@ gulp.task 'build', (cb) ->
 # ------------------------------------------------------------------------------
 # Watch
 # ------------------------------------------------------------------------------
-gulp.task 'watch', ['ensure build dir'], (cb) ->
+gulp.task 'watch', (cb) ->
   lr = $.livereload config.livereload.port
-
   gulp.watch("#{ config.client.build.root }/**")
     .on 'change', (file) -> lr.changed file.path
 
   gulp.watch "#{ config.client.src.scripts }/**", ['scripts']
   gulp.watch "#{ config.client.src.styles }/**/*.scss", ['sass']
-  gulp.watch "#{ config.client.src.scripts }/**/*.hamlc", ['templates']
-  gulp.watch "#{ config.client.src.pages }/**/*.hamlc", ['pages']
-  gulp.watch "#{ config.client.src.static }/**", ['copy static']
+  gulp.watch "#{ config.client.src.html }/**/*.hamlc", ['html']
+  gulp.watch "#{ config.client.src.images }/**", ['images']
+  gulp.watch "#{ config.client.src.public }/**", ['public']
 
   cb()
 
