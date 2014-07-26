@@ -20,6 +20,7 @@
     "gulp-cond": "0.0.2",
     "gulp-filter": "^0.4.1",
     "gulp-haml-coffee": "0.0.6",
+    "gulp-imagemin": "^0.6.2",
     "gulp-livereload": "^1.2.0",
     "gulp-load-plugins": "~0.5.0",
     "gulp-notify": "^1.2.6",
