@@ -10,7 +10,7 @@
     :javascript
       requirejs = #{ JSON.stringify @requirejs }
 
-    %script{data-main: '/assets/main.js', src: '/assets/requirejs/require.js' }
+    %script{data-main: '/assets/main.js', src: '/assets/require.js' }
 
     - if @livereload.port?
       :javascript

@@ -1,8 +1,7 @@
-{file} = require 'utils'
+{config, file} = require 'bedrock-utils'
 path = require 'path'
 _ = require 'underscore'
 express = require 'express'
-config = require 'config'
 
 ext = path.extname __filename
 options =
