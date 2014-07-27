@@ -32,7 +32,7 @@ gulp.task 'clean', ->
     .pipe $.rimraf force: true
 
 # ------------------------------------------------------------------------------
-# Copy public
+# Copy static assets
 # ------------------------------------------------------------------------------
 gulp.task 'public', ->
   gulp.src("#{ config.client.src.public }/**")
@@ -41,9 +41,8 @@ gulp.task 'public', ->
     .pipe gulp.dest config.client.build.root
 
 gulp.task 'bower', ->
-  mainBowerFiles = require 'main-bower-files'
-
-  gulp.src(mainBowerFiles())
+  gulp.src(require('main-bower-files')())
+    .pipe($.plumber errorHandler: alertError)
     .pipe gulp.dest config.client.build.assets
 
 # ------------------------------------------------------------------------------
@@ -68,7 +67,7 @@ gulp.task 'scripts', ->
     .pipe(hamlcFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
 
-gulp.task 'sass', ['public', 'images', 'rename css'], ->
+gulp.task 'sass', ['public', 'bower', 'images', 'rename css'], ->
   gulp.src("#{ config.client.src.styles }/main.scss")
     .pipe($.sass
       onError: alertError

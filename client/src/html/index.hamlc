@@ -13,7 +13,7 @@
 
     :javascript
       function loadError(){
-        document.body.innerHTML = '<h1>Something went wrong...</h1><p>We were not able to load necessary resources.</p>';
+        document.body.innerHTML = '<h1>Something went wrong</h1><p>Necessary resources could not be loaded</p>';
       };
 
       requirejs = #{ JSON.stringify @requirejs }
