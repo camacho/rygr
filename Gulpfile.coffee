@@ -23,7 +23,7 @@ alertError = $.notify.onError (error) ->
 # ------------------------------------------------------------------------------
 # Directory management
 # ------------------------------------------------------------------------------
-gulp.task 'clean build', ->
+gulp.task 'clean', ->
   dir = config.client.build.root
   fs.mkdirSync dir unless fs.existsSync dir
 
@@ -40,7 +40,7 @@ gulp.task 'public', ->
     .pipe($.changed config.client.build.root)
     .pipe gulp.dest config.client.build.root
 
-gulp.task 'copy bower', ->
+gulp.task 'bower', ->
   mainBowerFiles = require 'main-bower-files'
 
   gulp.src(mainBowerFiles())
@@ -127,7 +127,7 @@ gulp.task 'server', ->
 # ------------------------------------------------------------------------------
 gulp.task 'build', (cb) ->
   sequence = [
-    ['copy bower', 'scripts', 'public', 'html', 'sass']
+    ['bower', 'scripts', 'public', 'html', 'sass']
     cb
   ]
   runSequence sequence...
@@ -152,4 +152,4 @@ gulp.task 'watch', (cb) ->
 # Default
 # ------------------------------------------------------------------------------
 gulp.task 'default', ->
-  runSequence 'clean build', 'build', ['watch', 'server']
+  runSequence 'clean', 'build', ['watch', 'server']
