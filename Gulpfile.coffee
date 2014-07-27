@@ -42,8 +42,15 @@ gulp.task 'public', ->
 
 gulp.task 'bower', ->
   gulp.src(require('main-bower-files')())
+    .pipe($.filter '!**/*.scss')
     .pipe($.plumber errorHandler: alertError)
     .pipe gulp.dest config.client.build.assets
+
+gulp.task 'rename bower css', ->
+  gulp.src("bower_components/**/*.css")
+    .pipe($.plumber errorHandler: alertError)
+    .pipe($.rename prefix: '_', extname: '.scss')
+    .pipe(gulp.dest 'bower_components')
 
 # ------------------------------------------------------------------------------
 # Compile assets
@@ -67,21 +74,17 @@ gulp.task 'scripts', ->
     .pipe(hamlcFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
 
-gulp.task 'sass', ['public', 'bower', 'images', 'rename css'], ->
+gulp.task 'sass', ['public', 'bower', 'images'], ->
   gulp.src("#{ config.client.src.styles }/main.scss")
     .pipe($.sass
       onError: alertError
-      includePaths: require('node-bourbon').with config.client.build.root
+      includePaths: require('node-bourbon').with(
+        config.client.build.root,
+        'bower_components'
+      )
       imagePath: config.client.sass.imagePath
       sourceMap: config.client.sass.sourceMap
     )
-    .pipe(gulp.dest config.client.build.assets)
-
-gulp.task 'rename css', ->
-  gulp.src("#{ config.client.src.styles }/**/*.css")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.rimraf())
-    .pipe($.rename extname: '.scss')
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'images', ->
