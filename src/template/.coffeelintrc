@@ -34,7 +34,7 @@
     "level": "warn"
   },
   "no_backticks": {
-    "level": "ignore"
+    "level": "error"
   },
   "line_endings": {
     "level": "error",

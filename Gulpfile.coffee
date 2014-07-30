@@ -5,13 +5,10 @@ gulp = require 'gulp'
 $ = require('gulp-load-plugins')()
 
 runSequence = require 'run-sequence'
-path = require 'path'
-fs = require 'fs'
-_ = require 'underscore'
 
 ENV = process.env.NODE_ENV or 'development'
 {config} = require 'bedrock-utils'
-config.initialize 'config/*.json', debug: true
+config.initialize 'config/*.coffee', debug: true
 
 # ------------------------------------------------------------------------------
 # Custom vars and methods
@@ -24,134 +21,83 @@ alertError = $.notify.onError (error) ->
 # Directory management
 # ------------------------------------------------------------------------------
 gulp.task 'clean', ->
-  dir = config.client.build.root
-  fs.mkdirSync dir unless fs.existsSync dir
-
-  gulp.src("#{ dir }/*", read: false)
+  gulp.src("#{ config.build.dest }/*", read: false)
     .pipe($.plumber errorHandler: alertError)
     .pipe $.rimraf force: true
 
 # ------------------------------------------------------------------------------
-# Copy static assets
+# Compile
 # ------------------------------------------------------------------------------
-gulp.task 'public', ->
-  gulp.src("#{ config.client.src.public }/**")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.root)
-    .pipe gulp.dest config.client.build.root
-
-gulp.task 'bower', ->
-  gulp.src(require('main-bower-files')())
-    .pipe($.filter '!**/*.scss')
-    .pipe($.plumber errorHandler: alertError)
-    .pipe gulp.dest config.client.build.assets
-
-gulp.task 'rename bower css', ->
-  gulp.src("bower_components/**/*.css")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.rename prefix: '_', extname: '.scss')
-    .pipe(gulp.dest 'bower_components')
-
-# ------------------------------------------------------------------------------
-# Compile assets
-# ------------------------------------------------------------------------------
-gulp.task 'scripts', ->
+gulp.task 'compile', (cb) ->
+  src = ["#{ config.build.src }/**", "!#{ config.build.src }/template/**"]
   coffeeFilter = $.filter '**/*.coffee'
-  hamlcFilter = $.filter '**/*.hamlc'
 
-  gulp.src("#{ config.client.src.scripts }/**")
+  gulp.src(src)
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.assets)
-    .pipe($.preprocess context: ENV: ENV)
+    .pipe($.changed config.build.dest)
     .pipe(coffeeFilter)
     .pipe($.coffeelint optFile: './.coffeelintrc')
     .pipe($.coffeelint.reporter())
-    .pipe($.cond config.client.scripts.map, gulp.dest config.client.build.assets)
-    .pipe($.coffee bare: true, sourceMap: config.client.scripts.map)
+    .pipe($.coffee bare: true)
     .pipe(coffeeFilter.restore())
-    .pipe(hamlcFilter)
-    .pipe($.hamlCoffee js: true, placement: 'amd')
-    .pipe(hamlcFilter.restore())
-    .pipe(gulp.dest config.client.build.assets)
+    .pipe(gulp.dest config.build.dest)
+    .on 'end', ->
+      files = [
+        "#{ config.build.src }/template/**"
+        "#{ config.build.src }/template/**/.gitignore"
+        "#{ config.build.src }/template/.bowerrc"
+        "#{ config.build.src }/template/.coffeelintrc"
+      ]
+      gulp.src(files)
+        .pipe(gulp.dest "#{ config.build.dest }/template")
+        .on 'end', cb
 
-gulp.task 'sass', ['public', 'bower', 'images'], ->
-  gulp.src("#{ config.client.src.styles }/main.scss")
-    .pipe($.sass
-      onError: alertError
-      includePaths: require('node-bourbon').with(
-        config.client.build.root,
-        'bower_components'
-      )
-      imagePath: config.client.sass.imagePath
-      sourceMap: config.client.sass.sourceMap
-    )
-    .pipe(gulp.dest config.client.build.assets)
-
-gulp.task 'images', ->
-  gulp.src("#{ config.client.src.images }/**")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.assets)
-    .pipe($.imagemin())
-    .pipe(gulp.dest config.client.build.assets)
-
-gulp.task 'html', ->
-  hamlcFilter = $.filter '**/*.hamlc'
-
-  gulp.src([
-    "#{ config.client.src.html }/**"
-    "!#{ config.client.src.html }/**/_*.hamlc"
-  ])
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.root)
-    .pipe(hamlcFilter)
-    .pipe($.hamlCoffee locals: config)
-    .pipe(hamlcFilter.restore())
-    .pipe(gulp.dest config.client.build.root)
+  null
 
 # ------------------------------------------------------------------------------
-# Server
+# Release
 # ------------------------------------------------------------------------------
-gulp.task 'server', ->
-  nodemon = require 'nodemon'
-
-  nodemon
-    script: config.server.main
-    watch: config.server.root
-    ext: 'js coffee json'
-
-  nodemon
-    .on('start', -> console.log 'Server has started')
-    .on('quit', -> console.log 'Server has quit')
-    .on('restart', (files) -> console.log 'Server restarted due to: ', files)
-
-# ------------------------------------------------------------------------------
-# Build
-# ------------------------------------------------------------------------------
-gulp.task 'build', (cb) ->
-  sequence = [
-    ['bower', 'scripts', 'public', 'html', 'sass']
-    cb
+(->
+  types = [
+    'prerelease'
+    'patch'
+    'minor'
+    'major'
   ]
-  runSequence sequence...
+
+  bump = (type) ->
+    ->
+      gulp.src('./package.json')
+        .pipe($.bump type: type)
+        .pipe(gulp.dest './')
+
+  publish = (type) ->
+    (cb) ->
+      sequence = ['clean', 'compile']
+      sequence.push "bump:#{ type }" if type
+      sequence.push ->
+        spawn = require('child_process').spawn
+        spawn('npm', ['publish'], stdio: 'inherit').on 'close', cb
+
+      runSequence sequence...
+
+  for type, index in types
+    gulp.task "bump:#{ type }", bump type
+    # gulp.task "publish:#{ type }", publish type
+
+  gulp.task 'bump', bump 'patch'
+  # gulp.task 'publish', publish()
+)()
 
 # ------------------------------------------------------------------------------
 # Watch
 # ------------------------------------------------------------------------------
 gulp.task 'watch', (cb) ->
-  lr = $.livereload config.livereload.port
-  gulp.watch("#{ config.client.build.root }/**")
-    .on 'change', (file) -> lr.changed file.path
-
-  gulp.watch "#{ config.client.src.scripts }/**", ['scripts']
-  gulp.watch "#{ config.client.src.styles }/**/*.scss", ['sass']
-  gulp.watch "#{ config.client.src.html }/**/*.hamlc", ['html']
-  gulp.watch "#{ config.client.src.images }/**", ['images']
-  gulp.watch "#{ config.client.src.public }/**", ['public']
-
+  gulp.watch "#{ config.build.src }/**", ['compile']
   cb()
 
 # ------------------------------------------------------------------------------
 # Default
 # ------------------------------------------------------------------------------
 gulp.task 'default', ->
-  runSequence 'clean', 'build', ['watch', 'server']
+  runSequence 'clean', 'compile', 'watch'

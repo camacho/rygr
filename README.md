@@ -5,9 +5,7 @@ Foundational build tool and simple server to support thick web clients.
 
 Prerequisites
 ---
-For the install command to work, Node and
-[Xcode Command Line Tools](http://stackoverflow.com/questions/9329243/xcode-4-4-command-line-tools)
-must already be on the machine.
+Bedrock's only dependency is Node.
 
 To install Node via [Homebrew](http://brew.sh/), run:
 ```sh
@@ -15,20 +13,22 @@ brew update
 brew install node
 ```
 
-Install
----
+Bedrock is intended to be run as a global NPM:
 ```shell
-rake install
+npm install -g bedrock
 ```
 
-Update
+Init
 ---
+To initialize a new Bedrock project, go to the directory and run
 ```shell
-rake update
+bedrock init
 ```
 
-Stack
+What's generated?
 ---
+Bedrock generates a new project that is supported by NPM, Gulp, and Bower.
+
 Front end:
 * RequireJS modules (including templates)
 * Coffeescript
@@ -46,34 +46,16 @@ options to properly load a build of the client and support and push state URLs.
 The server can also be extended with additional functionality (like an API) with
 no problems.
 
-Build Tool
+Build tool
 ---
 Bedrock uses Gulp.js as it's build tool.
 
-To build:
+To compile the NPM:
 ```shell
-gulp build
+gulp compile
 ```
 
-To start the server:
+To compile, watch for changes, and test locally:
 ```shell
-gulp server
-```
-
-To build, start the server, and watch for changes:
-```shell
-gulp
-```
-
-Configs
----
-The configs directory contains basic options for RequireJS, the client,
-livereload, and the server. Feel free to add additional configs. They will
-automatically be read in and can be access via their filename as follows:
-
-```coffee
-{config} = require 'bedrock-utils'
-config.initialize 'config/*.json'
-console.log config.server.port
-#8888
+gulp clean && gulp compile && npm link && gulp watch
 ```

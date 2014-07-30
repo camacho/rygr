@@ -1,6 +1,6 @@
 {
   "name": "Bedrock",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Bedrock",
   "repository": {
@@ -12,35 +12,37 @@
   "bugs": {
     "url": "https://github.com/daftdevelopers/bedrock/issues"
   },
+  "homepage": "https://github.com/daftdevelopers/bedrock",
+  "files": [
+    "config",
+    "build",
+    "LICENSE"
+  ],
+  "bin": {
+    "bedrock": "./build/bin/bedrock.js"
+  },
   "devDependencies": {
+    "coffee-script": "^1.7.1",
     "gulp": "^3.8",
-    "gulp-bower-files": "~0.2.1",
     "gulp-changed": "^0.3.0",
     "gulp-coffee": "^1.4.3",
     "gulp-coffeelint": "~0.3.2",
-    "gulp-cond": "0.0.2",
-    "gulp-filter": "^0.4.1",
-    "gulp-haml-coffee": "0.0.6",
-    "gulp-imagemin": "^0.6.2",
-    "gulp-livereload": "^1.2.0",
+    "gulp-filter": "^1.0.0",
     "gulp-load-plugins": "~0.5.0",
     "gulp-notify": "^1.2.6",
     "gulp-plumber": "^0.5.6",
-    "gulp-preprocess": "^1.0.1",
-    "gulp-rename": "^1.2.0",
     "gulp-rimraf": "^0.1.0",
-    "gulp-sass": "^0.7.2",
-    "main-bower-files": "^1.0.2",
-    "node-bourbon": "^1.2.3",
-    "run-sequence": "~0.3.6",
-    "tiny-lr": "0.0.5"
+    "run-sequence": "~0.3.6"
   },
   "dependencies": {
-    "bedrock-utils": "0.0.10",
-    "coffee-script": "^1.7.1",
-    "express": "^4.5.0",
-    "nodemon": "^1.2.1",
-    "underscore": "~1.6.0",
-    "underscore.string": "~2.3.3"
+    "bedrock-utils": "^0.0.14",
+    "bower": "^1.3.8",
+    "fs-extra": "^0.10.0",
+    "inquirer": "^0.5.1",
+    "interpret": "^0.3.5",
+    "liftoff": "^0.12.0",
+    "minimist": "^0.2.0",
+    "npm": "^1.4.21",
+    "pretty-hrtime": "^0.2.1"
   }
 }
