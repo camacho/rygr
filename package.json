@@ -5,12 +5,12 @@
   "description": "Bedrock",
   "repository": {
     "type": "git",
-    "url": "git://github.com/crashlytics/bedrock.git"
+    "url": "git://github.com/daftdevelopers/bedrock.git"
   },
   "author": "Patrick Camacho",
   "license": "Apache License 2.0",
   "bugs": {
-    "url": "https://github.com/crashlytics/bedrock/issues"
+    "url": "https://github.com/daftdevelopers/bedrock/issues"
   },
   "devDependencies": {
     "gulp": "^3.8",
