@@ -8,6 +8,7 @@
     "url": "git://github.com/crashlytics/bedrock.git"
   },
   "author": "Patrick Camacho",
+  "license": "Apache License 2.0",
   "bugs": {
     "url": "https://github.com/crashlytics/bedrock/issues"
   },
