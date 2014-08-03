@@ -1,0 +1,32 @@
+{
+  "root": "client",
+  "src": {
+    "root": "client/src",
+    "html": "client/src/html",
+    "styles": "client/src/stylesheets",
+    "public": "client/src/public",
+    "scripts": "client/src/scripts",
+    "images": "client/src/images"
+  },
+  "sass": {
+    "sourceMap": false,
+    "imagePath": "client/src/images"
+  },
+  "scripts": {
+    "map": false
+  },
+  "build": {
+    "root": "client/build",
+    "assets": "client/build/assets"
+  },
+  "environments": {
+    "development": {
+      "sass": {
+        "sourceMap": false
+      },
+      "scripts": {
+        "map": false
+      }
+    }
+  }
+}

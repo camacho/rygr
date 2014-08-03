@@ -1,0 +1,10 @@
+{
+  "catchError": {
+    "define": true
+  },
+  "paths": {
+    "jquery": "jquery",
+    "hamlcoffee": "/hamlcoffee"
+  },
+  "baseUrl": "/assets"
+}
