@@ -10,8 +10,9 @@ fs = require 'fs'
 _ = require 'underscore'
 
 ENV = process.env.NODE_ENV or 'development'
+
 {config} = require 'rygr-util'
-config.initialize 'config/*.json', debug: true
+config.initialize 'config/*.json'
 
 # ------------------------------------------------------------------------------
 # Custom vars and methods
@@ -149,7 +150,7 @@ gulp.task 'watch', (cb) ->
   gulp.watch "#{ config.client.src.scripts }/**/*.{js,coffee}", ['scripts']
   gulp.watch "#{ config.client.src.scripts }/**/*.hamlc", ['templates']
   gulp.watch "#{ config.client.src.styles }/**/*.scss", ['sass']
-  gulp.watch "#{ config.client.src.html }/**/*.hamlc", ['html']
+  gulp.watch "#{ config.client.src.html }/**/*.{hamlc, html}", ['html']
   gulp.watch "#{ config.client.src.images }/**", ['images']
   gulp.watch "#{ config.client.src.public }/**", ['public']
 

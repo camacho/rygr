@@ -2,7 +2,7 @@
   .content
     %img.logo{src: '/assets/rygr.png'}
     .text
-      %h1 Welcome to Rygr
+      %h1 Welcome to rygr
       %p A simple, flexible build tool and server utilizing
         %a{href: 'http://gulpjs.com/', target: '_blank'} Gulp,
         %a{href: 'http://bower.io/',  target: '_blank'} Bower,
@@ -22,7 +22,7 @@
     %h2 Baked in features
     %p Out of the box, Rygr gives you support for a slew of features:
     %ul
-      %li Live reload (without the need for an extension orplugin)
+      %li Live reload (without the need for an extension or plugin)
       %li Bower packages
       %li JavaScript templates (via Haml-Coffee)
       %li HAML-Coffee and HTML pages
@@ -33,7 +33,7 @@
         %a{href: 'http://bourbon.io/', target: '_blank'} (and the Bourbon framework)
       %li RequireJS functionality (including loading in Bower packages)
       %li Easy configurations and environmental customization
-      %li Server backing for push state URLs and reloads
+      %li Server backing for push state URLs and asset serving
 
   %section
     %h2 Customize it

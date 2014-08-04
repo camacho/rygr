@@ -2,13 +2,15 @@
 path = require 'path'
 express = require 'express'
 _ = require 'underscore'
+
+# Load in configs
+paths = ["#{path.join(__dirname, '..', 'config')}/*.json", 'config/*.json']
+config.initialize paths
+
+# Call initializers
 require('./initializers/main')()
 
-paths = ['config/*.json', "#{path.join(__dirname, '..', 'config')}/*.json"]
-config.initialize? paths
-
-middleware = require './middleware/main'
-
+# Setup Express app
 app = express()
 
 # Setup directories
@@ -20,11 +22,14 @@ dirs =
 app.set 'dirs', dirs
 
 # Set middleware
-middleware app
+require('./middleware/main') app
 
+# Start listening
 server = app.listen config.server.port, ->
   console.log "Server listening on port #{ config.server.port }"
 
+# Make sure to shut down the server if the process is terminated
 process.on 'SIGTERM', server.close
 
+# Return the server
 module.export = server
