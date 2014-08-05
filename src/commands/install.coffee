@@ -1,10 +1,12 @@
 module.exports = (env, handleError, done) ->
   {log, colors, asyncQueue} = require 'rygr-util'
-  shell = require 'shelljs'
+  spawn = require('child_process').spawn
 
   installLocalNpms = (env, next) ->
     log 'Running `npm install`'
-    shell.exec 'npm install', (code) ->
+    install = spawn 'npm', ['install'], stdio: 'inherit'
+
+    install.once 'close', (code) ->
       return next new Error '`npm install` failed' if code isnt 0
       log colors.green '`npm install` succeeded'
       next()
@@ -12,7 +14,9 @@ module.exports = (env, handleError, done) ->
   installBowerPackages = (env, next) ->
     log 'Running `bower install`'
 
-    shell.exec 'bower install', (code) ->
+    install = spawn 'bower', ['install'], stdio: 'inherit'
+
+    install.once 'close', (code) ->
       return next new Error '`bower install` failed' if code isnt 0
       log colors.green '`bower install` succeeded'
       next()

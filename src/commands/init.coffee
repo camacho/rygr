@@ -5,12 +5,9 @@ module.exports = (env, handleError) ->
 
   path = require 'path'
   fs = require 'fs-extra'
-  semver = require 'semver'
   inquirer = require 'inquirer'
   _ = require 'underscore'
-
-  projectName = path.basename process.env.INIT_CWD
-  projectPackage = null
+  spawn = require('child_process').spawn
 
   ensureDirectory = (env, next) ->
     log 'Configuring directory'
@@ -28,6 +25,16 @@ module.exports = (env, handleError) ->
         log colors.green 'Directory configured'
         next()
 
+  sanitizeProjectName = (env, next) ->
+    log 'Sanitizing project name'
+
+    env.projectName = path.basename(env.cwd)
+      .replace(/[\/@\+%:]/g, '')
+      .replace(/[\s]/g, '-')
+
+    log colors.green 'Project name sanitized'
+    next()
+
   copyTemplate = (env, next) ->
     log 'Copying files'
 
@@ -35,104 +42,22 @@ module.exports = (env, handleError) ->
     fs.copy templatePath, env.cwd, (err) ->
       return next err if err
       log colors.green 'Files copied'
-      projectPackage = require path.join env.cwd, 'package'
       next()
 
   installGlobalNpms = (env, next) ->
-    log 'Checking global dependencies'
-
-    npm = require 'npm'
-
-    npm.load global: true, (err) ->
-      return next err if err
-
-      npm.commands.ls [], true, (err, packages) ->
-        return next err if err
-
-        needed = []
-
-        for dep in ['coffee-script', 'gulp']
-          requiredVers =
-            projectPackage.dependencies[dep] or
-            projectPackage.devDependencies[dep]
-
-          installedVers = packages.dependencies[dep]?.version
-
-          continue if installedVers and not requiredVers
-
-          install = dep
-          install += "@#{ requiredVers.replace /(\^|\~)/g, ''}" if requiredVers
-
-          unless semver.satisfies installedVers, requiredVers
-            needed.push
-              required: requiredVers
-              current: installedVers
-              npm: dep
-              install: install
-
-        unless needed.length
-          log colors.green 'All global dependencies are installed'
-          return next()
-
-        promptNpmInstalls needed, next
-
-  promptNpmInstalls = (needed, next) ->
-    console.log 'Some global npm dependencies are missing or out of date:'
-
-    installs = []
-    upgrades = []
-    choices = []
-
-    for need in needed
-      choice = name: need.install, checked: true
-      if need.current then upgrades.push choice else installs.push choice
-
-    if installs.length
-      choices.push new inquirer.Separator 'Installs:'
-      choices = choices.concat installs
-
-    if upgrades.length
-      choices.push new inquirer.Separator 'Upgrades:'
-      choices = choices.concat upgrades
-
-    inquirer.prompt [{
-      type: 'checkbox'
-      name: 'dependencies'
-      message: 'Select which global npm dependencies to install or upgrade'
-      choices: choices
-    }], (answers) ->
-      chosen = answers.dependencies
-
-      # Are all required installs chosen?
-      required = installs.map (install) -> install.name
-      if (diff = _.difference required, chosen).length
-        diff = diff.map (item) -> "'#{ item.split('@')[0] }'"
-        return next new Error "#{ diff.join ', ' } must be installed to proceed"
-
-      # Are all upgrades chosen?
-      optional = upgrades.map (upgrade) -> upgrade.name
-      if (diff = _.difference optional, chosen).length
-        diff = diff.map (item) -> "'#{ item.split('@')[0] }'"
-        log colors.yellow "#{ diff.join ', ' } should be upgraded"
-
-      return next() unless chosen.length
-
-      npm = require 'npm'
-
-      npm.commands.install answers.dependencies, (err, data) ->
-        return next err if err
-        log colors.green 'Global dependencies installed'
-        next()
+    require('./install_global_npms') env, handleError, next
 
   initializeNpm = (env, next) ->
     log 'Configuring NPM'
 
-    projectPackage.name = projectName
-
     loc = path.join env.cwd, 'package'
-    value = JSON.stringify projectPackage, undefined, 2
 
-    fs.writeFile "#{ loc }.json", value, (err) ->
+    projectPackage = require loc
+    projectPackage.name = env.projectName
+
+    json = JSON.stringify projectPackage, undefined, 2
+
+    fs.writeFile "#{ loc }.json", json, (err) ->
       return next err if err
       log colors.green 'NPM configured'
       next()
@@ -141,7 +66,7 @@ module.exports = (env, handleError) ->
     log 'Configuring Bower'
 
     loc = path.join env.cwd, 'bower'
-    (conf = require loc).name = projectName
+    (conf = require loc).name = env.projectName
 
     fs.writeFile "#{ loc }.json", JSON.stringify(conf, undefined, 2), (err) ->
       return next err if err
@@ -149,9 +74,7 @@ module.exports = (env, handleError) ->
       next()
 
   installLocalDependenies = (env, next) ->
-    require('./install') env, handleError, (err) ->
-      return if err
-      next()
+    require('./install') env, handleError, next
 
   success = (env, next) ->
     log colors.bold colors.green 'rygr project successfully initiated'
@@ -166,26 +89,36 @@ module.exports = (env, handleError) ->
     }]
 
     inquirer.prompt questions, (answers) ->
-      if answers.run
-        shell = require 'shelljs'
-
-        shell.exec 'gulp build', (code) ->
-          return next new Error 'Gulp failed to run' if code isnt 0
-          shell.exec 'gulp server watch', (code) ->
-            next new Error 'Gulp failed to start the server' if code isnt 0
-
-          # Hack until I build a way to listen to server start on child process
-          setTimeout (-> require('open') 'http://localhost:8888'), 2000
-          next()
-
-      else
+      unless answers.run
         console.log colors.green 'Run `gulp` and
         then visit http://localhost:8888'
 
-        next()
+        return next()
+
+      removeListeners = ->
+        gulp.stdout.removeListener 'data', listenForServerStart
+        gulp.removeListener 'close', handleClose
+
+      handleClose = (code) ->
+        removeListeners()
+        if code isnt 0
+          return next new Error 'Gulp failed to compile and run correctly'
+
+      listenForServerStart = (data) ->
+        if data.toString() is 'Server listening on port 8888\n'
+          removeListeners()
+          require('open') 'http://localhost:8888'
+          next()
+
+      gulp = spawn 'gulp'
+      gulp.stdout.pipe process.stdout, end: false
+      gulp.stderr.pipe process.stderr
+      gulp.once 'close', handleClose
+      gulp.stdout.on 'data', listenForServerStart
 
   asyncQueue [env], [
     ensureDirectory
+    sanitizeProjectName
     copyTemplate
     installGlobalNpms
     initializeNpm

@@ -43,7 +43,6 @@
     "pretty-hrtime": "^0.2.1",
     "rygr-util": "https://npm.fury.io/tLxojpRN2pypifdW1xKY/camacho/rygr-util/-/0.2.1.tgz",
     "semver": "^3.0.1",
-    "shelljs": "^0.3.0",
     "underscore": "^1.6.0"
   }
 }
