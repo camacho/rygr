@@ -92,7 +92,7 @@ module.exports = (env, done) ->
     ensureDirectory
     sanitizeProjectName
     copyTemplate
-    require('./install_global_npms')
+    require('./install_global')
     configureProject
     require('./install')
     success

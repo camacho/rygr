@@ -81,8 +81,6 @@ module.exports = (env, done) ->
 
       return next() unless chosen.length
 
-      npm = require 'npm'
-
       npm.commands.install answers.dependencies, (err, data) ->
         return next err if err
         log colors.green 'Global dependencies installed'
