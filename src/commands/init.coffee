@@ -1,6 +1,6 @@
 {log, colors, asyncQueue} = require 'rygr-util'
 
-module.exports = (env, done) ->
+module.exports = (options, done) ->
   log colors.bold colors.green 'Initializing new rygr project'
 
   path = require 'path'
@@ -9,50 +9,51 @@ module.exports = (env, done) ->
   _ = require 'underscore'
   spawn = require('child_process').spawn
 
-  ensureDirectory = (env, next) ->
+  ensureDirectory = (options, next) ->
     log 'Configuring directory'
 
-    return next() if env is process.cwd()
+    return next() if options is process.cwd()
 
-    fs.exists env.cwd, (exists) ->
-      return next new Error "Directory '#{ env.cwd }' already exists" if exists
+    fs.exists options.cwd, (exists) ->
+      if exists
+        return next new Error "Directory '#{ options.cwd }' already exists"
 
-      fs.mkdir env.cwd, (err) ->
+      fs.mkdir options.cwd, (err) ->
         return next err if err
 
-        process.chdir env.cwd
+        process.chdir options.cwd
 
         log colors.green 'Directory configured'
         next()
 
-  sanitizeProjectName = (env, next) ->
+  sanitizeProjectName = (options, next) ->
     log 'Sanitizing project name'
 
-    env.projectName = path.basename(env.cwd)
+    options.projectName = path.basename(options.cwd)
       .replace(/[\/@\+%:]/g, '')
       .replace(/[\s]/g, '-')
 
     log colors.green 'Project name sanitized'
     next()
 
-  copyTemplate = (env, next) ->
+  copyTemplate = (options, next) ->
     log 'Copying files'
 
     templatePath = path.join __dirname, '../', 'template'
-    fs.copy templatePath, env.cwd, (err) ->
+    fs.copy templatePath, options.cwd, (err) ->
       return next err if err
       log colors.green 'Files copied'
       next()
 
-  configureProject = (env, next) ->
+  configureProject = (options, next) ->
     log 'Configuring project'
 
     for name, loc of {npm: 'package', 'Bower': 'bower'}
 
-      loc = path.join env.cwd, loc
+      loc = path.join options.cwd, loc
 
       contents = require loc
-      contents.name = env.projectName
+      contents.name = options.projectName
 
       json = JSON.stringify contents, undefined, 2
 
@@ -64,11 +65,11 @@ module.exports = (env, done) ->
     log colors.green 'Project configured'
     next()
 
-  success = (env, next) ->
+  success = (options, next) ->
     log colors.bold colors.green 'rygr project successfully initiated'
     next()
 
-  runGulp = (env, next) ->
+  runGulp = (options, next) ->
     questions = [{
       type: 'confirm'
       name: 'run'
@@ -78,17 +79,20 @@ module.exports = (env, done) ->
 
     inquirer.prompt questions, (answers) ->
       if answers.run
-        require('./gulp') env, next
+        require('./gulp') options, next
       else
         return next()
 
-  nextSteps = (env, next) ->
+  nextSteps = (options, next) ->
     cmds = ['gulp']
-    cmds.unshift "cd #{ env.cwd }" if env.cwd isnt process.env.INIT_CWD
+
+    if options.cwd isnt process.env.INIT_CWD
+      cmds.unshift "cd #{ options.cwd }"
+
     cmds = colors.cyan cmds.join ' && '
     console.log "run `#{ cmds }` to build, watch, and start the server"
 
-  asyncQueue [env], [
+  asyncQueue [options], [
     ensureDirectory
     sanitizeProjectName
     copyTemplate
@@ -98,5 +102,5 @@ module.exports = (env, done) ->
     success
     runGulp
     nextSteps
-    (err, env, next) -> log.error err
+    (err, options, next) -> log.error err
   ], done

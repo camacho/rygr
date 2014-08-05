@@ -1,6 +1,6 @@
 {colors, log} = require 'rygr-util'
 
-module.exports = (env, done) ->
+module.exports = (options, done) ->
   cliPackage = require '../../package'
   log "Version #{colors.cyan cliPackage.version}"
 

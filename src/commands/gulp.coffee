@@ -1,4 +1,4 @@
-module.exports = (env, done) ->
+module.exports = (options, done) ->
   {log, colors, asyncQueue} = require 'rygr-util'
   spawn = require('child_process').spawn
 

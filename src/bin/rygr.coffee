@@ -26,14 +26,12 @@ cmds = argv._
 # ------------------------------------------------------------------------------
 # Register commands
 # ------------------------------------------------------------------------------
-commands = require '../commands/main'
+execute = require '../commands/main'
 
 # ------------------------------------------------------------------------------
 # Run logic
 # ------------------------------------------------------------------------------
 run = (env) ->
-  execute = runCommand.bind runCommand, env
-
   if versionFlag
     execute 'version'
     process.exit 0
@@ -52,16 +50,9 @@ run = (env) ->
     if cmds[0] is 'init' and cmds.length is 2
       [cmd, dir] = cmds
       env.cwd = path.resolve process.cwd(), dir
-      execute cmd
+      execute cmd, env
     else
-      execute cmds.join(' ')
-
-runCommand = (env, task) ->
-  try
-    throw new Error "Command '#{ task }' does not exist" unless commands[task]
-    commands[task] env
-  catch e
-    log.error e
+      execute cmds.join(' '), env
 
 # ------------------------------------------------------------------------------
 # Setup CLI

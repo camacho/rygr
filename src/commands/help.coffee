@@ -1,4 +1,4 @@
-module.exports = (env, done) ->
+module.exports = (options, done) ->
   {colors} = require 'rygr-util'
 
   console.log "\n  usage: #{ colors.bold 'rygr <command>' }\n"
