@@ -59,27 +59,9 @@ run = (env) ->
 runCommand = (env, task) ->
   try
     throw new Error "Command '#{ task }' does not exist" unless commands[task]
-    commands[task] env, handleError
+    commands[task] env
   catch e
-    handleError e
-
-# ------------------------------------------------------------------------------
-# Error Handling
-# ------------------------------------------------------------------------------
-handleError = (err, env, cb) ->
-  failed = true
-
-  err =
-    if not err.err
-      err.message
-    else if typeof err.err is 'string'
-      new Error(err.err).stack
-    else if typeof e.err.showStack is 'boolean'
-      err.err.toString()
-    else
-      err.err.stack
-
-  log colors.red err
+    log.error e
 
 # ------------------------------------------------------------------------------
 # Setup CLI

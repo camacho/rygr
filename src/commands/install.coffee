@@ -1,4 +1,4 @@
-module.exports = (env, handleError, done) ->
+module.exports = (env, done) ->
   {log, colors, asyncQueue} = require 'rygr-util'
   spawn = require('child_process').spawn
 
@@ -24,5 +24,5 @@ module.exports = (env, handleError, done) ->
   asyncQueue [env], [
     installLocalNpms
     installBowerPackages
-    handleError
+    (err, env, next) -> log.error err
   ], done

@@ -1,6 +1,6 @@
 {log, colors, asyncQueue} = require 'rygr-util'
 
-module.exports = (env, handleError) ->
+module.exports = (env, done) ->
   log colors.bold colors.green 'Initializing new rygr project'
 
   path = require 'path'
@@ -44,9 +44,6 @@ module.exports = (env, handleError) ->
       log colors.green 'Files copied'
       next()
 
-  installGlobalNpms = (env, next) ->
-    require('./install_global_npms') env, handleError, next
-
   configureProject = (env, next) ->
     log 'Configuring project'
 
@@ -67,9 +64,6 @@ module.exports = (env, handleError) ->
     log colors.green 'Project configured'
     next()
 
-  installLocalDependenies = (env, next) ->
-    require('./install') env, handleError, next
-
   success = (env, next) ->
     log colors.bold colors.green 'rygr project successfully initiated'
     next()
@@ -84,7 +78,7 @@ module.exports = (env, handleError) ->
 
     inquirer.prompt questions, (answers) ->
       if answers.run
-        require('./gulp') env, handleError, next
+        require('./gulp') env, next
       else
         return next()
 
@@ -98,11 +92,11 @@ module.exports = (env, handleError) ->
     ensureDirectory
     sanitizeProjectName
     copyTemplate
-    installGlobalNpms
+    require('./install_global_npms')
     configureProject
-    installLocalDependenies
+    require('./install')
     success
     runGulp
     nextSteps
-    handleError
-  ]
+    (err, env, next) -> log.error err
+  ], done

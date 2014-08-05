@@ -3,7 +3,7 @@ globalDependencies =
   gulp: '^3.8'
   bower: '^1.3.8'
 
-module.exports = (env, handleError, done) ->
+module.exports = (env, done) ->
   {log, colors, asyncQueue} = require 'rygr-util'
   _ = require 'underscore'
   semver = require 'semver'
@@ -90,5 +90,5 @@ module.exports = (env, handleError, done) ->
 
   asyncQueue [env], [
     installGlobalNpms
-    handleError
+    (err, env, next) -> log.error err
   ], done
