@@ -47,31 +47,25 @@ module.exports = (env, handleError) ->
   installGlobalNpms = (env, next) ->
     require('./install_global_npms') env, handleError, next
 
-  initializeNpm = (env, next) ->
-    log 'Configuring NPM'
+  configureProject = (env, next) ->
+    log 'Configuring project'
 
-    loc = path.join env.cwd, 'package'
+    for name, loc of {npm: 'package', 'Bower': 'bower'}
 
-    projectPackage = require loc
-    projectPackage.name = env.projectName
+      loc = path.join env.cwd, loc
 
-    json = JSON.stringify projectPackage, undefined, 2
+      contents = require loc
+      contents.name = env.projectName
 
-    fs.writeFile "#{ loc }.json", json, (err) ->
-      return next err if err
-      log colors.green 'NPM configured'
-      next()
+      json = JSON.stringify contents, undefined, 2
 
-  initializeBower = (env, next) ->
-    log 'Configuring Bower'
+      try
+        fs.writeFileSync "#{ loc }.json", json
+      catch e
+        return next err if err
 
-    loc = path.join env.cwd, 'bower'
-    (conf = require loc).name = env.projectName
-
-    fs.writeFile "#{ loc }.json", JSON.stringify(conf, undefined, 2), (err) ->
-      return next err if err
-      log colors.green 'Bower configured'
-      next()
+    log colors.green 'Project configured'
+    next()
 
   installLocalDependenies = (env, next) ->
     require('./install') env, handleError, next
@@ -80,7 +74,7 @@ module.exports = (env, handleError) ->
     log colors.bold colors.green 'rygr project successfully initiated'
     next()
 
-  gulp = (env, next) ->
+  runGulp = (env, next) ->
     questions = [{
       type: 'confirm'
       name: 'run'
@@ -89,42 +83,26 @@ module.exports = (env, handleError) ->
     }]
 
     inquirer.prompt questions, (answers) ->
-      unless answers.run
-        console.log colors.green 'Run `gulp` and
-        then visit http://localhost:8888'
-
+      if answers.run
+        require('./gulp') env, handleError, next
+      else
         return next()
 
-      removeListeners = ->
-        gulp.stdout.removeListener 'data', listenForServerStart
-        gulp.removeListener 'close', handleClose
-
-      handleClose = (code) ->
-        removeListeners()
-        if code isnt 0
-          return next new Error 'Gulp failed to compile and run correctly'
-
-      listenForServerStart = (data) ->
-        if data.toString() is 'Server listening on port 8888\n'
-          removeListeners()
-          require('open') 'http://localhost:8888'
-          next()
-
-      gulp = spawn 'gulp'
-      gulp.stdout.pipe process.stdout, end: false
-      gulp.stderr.pipe process.stderr
-      gulp.once 'close', handleClose
-      gulp.stdout.on 'data', listenForServerStart
+  nextSteps = (env, next) ->
+    cmds = ['gulp']
+    cmds.unshift "cd #{ env.cwd }" if env.cwd isnt process.env.INIT_CWD
+    cmds = colors.cyan cmds.join ' && '
+    console.log "run `#{ cmds }` to build, watch, and start the server"
 
   asyncQueue [env], [
     ensureDirectory
     sanitizeProjectName
     copyTemplate
     installGlobalNpms
-    initializeNpm
-    initializeBower
+    configureProject
     installLocalDependenies
     success
-    gulp
+    runGulp
+    nextSteps
     handleError
   ]
