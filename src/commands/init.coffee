@@ -12,6 +12,22 @@ module.exports = (env, handleError) ->
   projectName = path.basename process.env.INIT_CWD
   projectPackage = null
 
+  ensureDirectory = (env, next) ->
+    log 'Configuring directory'
+
+    return next() if env is process.cwd()
+
+    fs.exists env.cwd, (exists) ->
+      return next new Error "Directory '#{ env.cwd }' already exists" if exists
+
+      fs.mkdir env.cwd, (err) ->
+        return next err if err
+
+        process.chdir env.cwd
+
+        log colors.green 'Directory configured'
+        next()
+
   copyTemplate = (env, next) ->
     log 'Copying files'
 
@@ -19,7 +35,7 @@ module.exports = (env, handleError) ->
     fs.copy templatePath, env.cwd, (err) ->
       return next err if err
       log colors.green 'Files copied'
-      projectPackage = require path.join process.env.INIT_CWD, 'package'
+      projectPackage = require path.join env.cwd, 'package'
       next()
 
   installGlobalNpms = (env, next) ->
@@ -113,7 +129,7 @@ module.exports = (env, handleError) ->
 
     projectPackage.name = projectName
 
-    loc = path.join process.env.INIT_CWD, 'package'
+    loc = path.join env.cwd, 'package'
     value = JSON.stringify projectPackage, undefined, 2
 
     fs.writeFile "#{ loc }.json", value, (err) ->
@@ -124,7 +140,7 @@ module.exports = (env, handleError) ->
   initializeBower = (env, next) ->
     log 'Configuring Bower'
 
-    loc = path.join process.env.INIT_CWD, 'bower'
+    loc = path.join env.cwd, 'bower'
     (conf = require loc).name = projectName
 
     fs.writeFile "#{ loc }.json", JSON.stringify(conf, undefined, 2), (err) ->
@@ -139,7 +155,9 @@ module.exports = (env, handleError) ->
 
   success = (env, next) ->
     log colors.bold colors.green 'rygr project successfully initiated'
+    next()
 
+  gulp = (env, next) ->
     questions = [{
       type: 'confirm'
       name: 'run'
@@ -167,11 +185,13 @@ module.exports = (env, handleError) ->
         next()
 
   asyncQueue [env], [
+    ensureDirectory
     copyTemplate
     installGlobalNpms
     initializeNpm
     initializeBower
     installLocalDependenies
     success
+    gulp
     handleError
   ]

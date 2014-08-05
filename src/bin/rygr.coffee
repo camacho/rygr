@@ -13,6 +13,7 @@ process.once 'exit', (code) -> process.exit 1 if code is 0 and failed
 # ------------------------------------------------------------------------------
 {colors, log, file} = require 'rygr-util'
 Liftoff = require 'liftoff'
+path = require 'path'
 argv = require('minimist') process.argv.slice 2
 
 # ------------------------------------------------------------------------------
@@ -48,7 +49,12 @@ run = (env) ->
     process.exit 5
 
   process.nextTick ->
-    execute cmd for cmd in cmds
+    if cmds[0] is 'init' and cmds.length is 2
+      [cmd, dir] = cmds
+      env.cwd = path.resolve process.cwd(), dir
+      execute cmd
+    else
+      execute cmds.join(' ')
 
 runCommand = (env, task) ->
   try
