@@ -12,24 +12,45 @@ module.exports = (options, done) ->
   ensureDirectory = (options, next) ->
     log 'Configuring directory'
 
-    return next() if options is process.cwd()
+    done = ->
+      process.chdir options.dir
+      log colors.green 'Directory configured'
+      next()
 
-    fs.exists options.cwd, (exists) ->
+    fs.exists options.dir, (exists) ->
       if exists
-        return next new Error "Directory '#{ options.cwd }' already exists"
+        files = fs.readdir options.dir, (err, files) ->
+          return next err if err
 
-      fs.mkdir options.cwd, (err) ->
-        return next err if err
+          if files.length
+            log "#{ colors.bgYellow colors.black 'WARN' }
+            '#{ options.dir }' already exists and contains files"
 
-        process.chdir options.cwd
+            questions = [{
+              type: 'confirm'
+              name: 'continue'
+              message: 'Initialize rygr project anyway?'
+              default: false
+            }]
 
-        log colors.green 'Directory configured'
-        next()
+            inquirer.prompt questions, (answers) ->
+              if answers.continue
+                log colors.yellow 'Continuing with populated directory.'
+                log colors.yellow 'This might override files.'
+                done()
+              else
+                log colors.red 'Rygr init aborted!'
+          else
+            done()
+      else
+        fs.mkdir options.dir, (err) ->
+          return next err if err
+          done()
 
   sanitizeProjectName = (options, next) ->
     log 'Sanitizing project name'
 
-    options.projectName = path.basename(options.cwd)
+    options.projectName = path.basename(options.dir)
       .replace(/[\/@\+%:]/g, '')
       .replace(/[\s]/g, '-')
 
@@ -40,7 +61,7 @@ module.exports = (options, done) ->
     log 'Copying files'
 
     templatePath = path.join __dirname, '../', 'template'
-    fs.copy templatePath, options.cwd, (err) ->
+    fs.copy templatePath, options.dir, (err) ->
       return next err if err
       log colors.green 'Files copied'
       next()
@@ -50,7 +71,7 @@ module.exports = (options, done) ->
 
     for name, loc of {npm: 'package', 'Bower': 'bower'}
 
-      loc = path.join options.cwd, loc
+      loc = path.join options.dir, loc
 
       contents = require loc
       contents.name = options.projectName
@@ -86,8 +107,8 @@ module.exports = (options, done) ->
   nextSteps = (options, next) ->
     cmds = ['gulp']
 
-    if options.cwd isnt process.env.INIT_CWD
-      cmds.unshift "cd #{ options.cwd }"
+    if options.dir isnt process.env.INIT_CWD
+      cmds.unshift "cd #{ options.dir }"
 
     cmds = colors.cyan cmds.join ' && '
     console.log "run `#{ cmds }` to build, watch, and start the server"

@@ -24,14 +24,14 @@ helpFlag = argv.h or argv.help
 cmds = argv._
 
 # ------------------------------------------------------------------------------
-# Register commands
+# Load commands and execute method
 # ------------------------------------------------------------------------------
-execute = require '../commands/main'
+execute = require '../index'
 
 # ------------------------------------------------------------------------------
 # Run logic
 # ------------------------------------------------------------------------------
-run = (env) ->
+run = (options) ->
   if versionFlag
     execute 'version'
     process.exit 0
@@ -49,10 +49,12 @@ run = (env) ->
   process.nextTick ->
     if cmds[0] is 'init' and cmds.length is 2
       [cmd, dir] = cmds
-      env.cwd = path.resolve process.cwd(), dir
-      execute cmd, env
+      options.dir = path.resolve process.cwd(), dir
+      try process.chdir options.dir
+      execute cmd, options
     else
-      execute cmds.join(' '), env
+      options.dir = process.cwd()
+      execute cmds.join(' '), options
 
 # ------------------------------------------------------------------------------
 # Setup CLI

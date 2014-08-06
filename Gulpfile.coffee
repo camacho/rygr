@@ -48,7 +48,10 @@ gulp.task 'copy template', ->
     .pipe(gulp.dest "#{ config.build.dest }/template")
 
 gulp.task 'compile', ->
-  gulp.src("#{ config.build.src }/{bin,commands}/**/*.coffee")
+  gulp.src([
+    "#{ config.build.src }/*.coffee"
+    "#{ config.build.src }/{bin,commands}/**/*.coffee"
+  ])
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.build.dest)
     .pipe($.coffeelint optFile: './.coffeelintrc')
@@ -101,7 +104,10 @@ gulp.task 'build', (cb) ->
 # Watch
 # ------------------------------------------------------------------------------
 gulp.task 'watch', (cb) ->
-  gulp.watch "#{ config.build.src }/{bin,commands}/**/*.coffee", ['compile']
+  gulp.watch [
+    "#{ config.build.src }/*.coffee"
+    "#{ config.build.src }/{bin,commands}/**/*.coffee"
+  ], ['compile']
 
   cb()
 

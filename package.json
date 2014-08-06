@@ -12,6 +12,7 @@
     "url": "https://github.com/camacho/rygr/issues"
   },
   "homepage": "https://github.com/camacho/rygr",
+  "main": "lib/index.js",
   "files": [
     "config",
     "lib",
