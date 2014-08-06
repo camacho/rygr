@@ -1,5 +1,6 @@
 rygr
-======
+===
+<img align="left" height="240" width="104" src="src/template/client/src/images/rygr.png">
 
 A foundational build tool and simple server to support thick web clients.
 
