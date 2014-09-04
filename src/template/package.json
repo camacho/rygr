@@ -22,7 +22,7 @@
     "tiny-lr": "0.0.5"
   },
   "dependencies": {
-    "rygr-util": "https://npm.fury.io/tLxojpRN2pypifdW1xKY/camacho/rygr-util/-/0.2.1.tgz",
+    "rygr-util": "^1.0.1",
     "coffee-script": "^1.7.1",
     "express": "^4.5.0",
     "nodemon": "^1.2.1",

@@ -41,7 +41,11 @@ run = (options) ->
     process.exit 0
 
   unless cmds.length
-    availCmds = Object.keys(commands).map((key) -> colors.magenta key).join ', '
+    availCmds = Object
+      .keys(execute.commands)
+      .map((key) -> colors.magenta key)
+      .join ', '
+
     log colors.red 'No command specified'
     log "Avaiable commands are [#{ availCmds }]"
     process.exit 5
