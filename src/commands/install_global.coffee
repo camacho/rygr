@@ -1,7 +1,7 @@
 globalDependencies =
   'coffee-script': '^1.7.1'
-  gulp: '^3.8'
-  bower: '^1.3.8'
+  gulp: '^3.8.7'
+  bower: '^1.3.9'
 
 module.exports = (options, done) ->
   {log, colors, asyncQueue} = require 'rygr-util'

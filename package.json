@@ -1,6 +1,6 @@
 {
   "name": "rygr",
-  "version": "0.1.8",
+  "version": "1.0.0",
   "description": "Rygr",
   "repository": {
     "type": "git",
@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "coffee-script": "^1.7.1",
-    "gulp": "^3.8",
+    "gulp": "^3.8.7",
     "gulp-bump": "^0.1.10",
     "gulp-changed": "^0.3.0",
     "gulp-coffee": "^1.4.3",
@@ -42,7 +42,7 @@
     "npm": "^1.4.23",
     "open": "0.0.5",
     "pretty-hrtime": "^0.2.1",
-    "rygr-util": "https://npm.fury.io/tLxojpRN2pypifdW1xKY/camacho/rygr-util/-/0.2.1.tgz",
+    "rygr-util": "^1.0.1",
     "semver": "^3.0.1",
     "underscore": "^1.6.0"
   }
