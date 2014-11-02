@@ -37,6 +37,7 @@ gulp.task 'copy template', ->
     '.bowerrc'
     '.coffeelintrc'
     '.gitignore'
+    'bower_components/.gitignore'
   ]
 
   options =

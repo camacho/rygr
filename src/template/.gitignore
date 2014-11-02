@@ -17,6 +17,5 @@ lib-cov
 tmp
 results
 
-bower_components
 client/build
 node_modules
