@@ -13,19 +13,21 @@
     "imagePath": "client/src/images"
   },
   "scripts": {
-    "map": false
+    "sourceMap": false
   },
   "build": {
     "root": "client/build",
-    "assets": "client/build/assets"
+    "assets": "client/build/assets",
+    "maps": "client/build/assets/_maps",
+    "src": "client/build/assets/_src"
   },
   "environments": {
     "development": {
       "sass": {
-        "sourceMap": false
+        "sourceMap": true
       },
       "scripts": {
-        "map": false
+        "sourceMap": true
       }
     }
   }

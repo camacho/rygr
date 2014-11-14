@@ -58,6 +58,9 @@ gulp.task 'rename bower css', ->
 # ------------------------------------------------------------------------------
 gulp.task 'scripts', ->
   coffeeFilter = $.filter '**/*.coffee'
+  useSourceMaps = config.client.scripts.sourceMap
+  relativeMapsDir = path.relative config.client.build.assets, config.client.build.maps
+  srcUrlRoot = "/#{path.relative config.client.build.root, config.client.build.src}"
 
   gulp.src("#{ config.client.src.scripts }/**/*.{js,coffee}")
     .pipe($.plumber errorHandler: alertError)
@@ -66,7 +69,10 @@ gulp.task 'scripts', ->
     .pipe(coffeeFilter)
     .pipe($.coffeelint optFile: './.coffeelintrc')
     .pipe($.coffeelint.reporter())
-    .pipe($.coffee bare: true, sourceMap: config.client.scripts.map)
+    .pipe($.if useSourceMaps, $.sourcemaps.init())
+    .pipe($.if useSourceMaps, gulp.dest config.client.build.src)
+    .pipe($.coffee bare: true)
+    .pipe($.if useSourceMaps, $.sourcemaps.write(relativeMapsDir, includeContent: false, sourceRoot: srcUrlRoot))
     .pipe(coffeeFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
 
