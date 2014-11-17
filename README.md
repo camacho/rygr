@@ -2,7 +2,7 @@ Rygr
 ===
 <img align="left" height="240" width="104" src="src/template/client/src/images/rygr.png">
 
-Simple scaffolding CLI to setup up a build tool and server for supporting thick web clients.
+Simple scaffolding CLI to setup up a build tool and server to support thick web clients.
 
 Rygr is based on the idea of getting developers writing their web app as fast as possible. It scaffolds a foundational layer that provides a battle-tested stack, and then gets out of the way.
 
