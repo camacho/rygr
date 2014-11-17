@@ -1,4 +1,4 @@
-rygr
+Rygr
 ======
 
 Simple build tool and server to support thick web clients.
@@ -27,8 +27,8 @@ Front end:
 * RequireJS modules (including templates)
 * Coffeescript
 * SASS w/Bourbon
-* HAMLC JS templates
-* HAMLC HTML pages
+* Jade JS templates
+* Jade HTML pages
 * Static files
 * Bower for 3rd party dependencies
 

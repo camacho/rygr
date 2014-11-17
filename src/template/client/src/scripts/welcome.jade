@@ -1,0 +1,62 @@
+header
+  .content
+    img.logo(src = '/assets/rygr.png')
+    .text
+      h1 Welcome to rygr
+      p 
+        | A simple, flexible build tool and server utilizing 
+        a(href = 'http://gulpjs.com/', target = '_blank') Gulp
+        | ,  
+        a(href = 'http://bower.io/',  target = '_blank') Bower
+        | , and 
+        a(href = 'http://expressjs.com/',  target = '_blank') Express
+
+article
+  section
+    h2 Getting started
+    p Rygr is a foundational tool that is built to get you writing your web app as fast as possible. It doesn't subscribe to any JS application frameworks, and is completely adapatable to your development preferences.
+    p
+      | Getting started is as easy as running 
+      code gulp
+      |  from the command line
+
+  section
+    h2 Baked in features
+    p Out of the box, Rygr gives you support for a slew of features
+    ul
+      li Live reload (without the need for an extension or plugin)
+      li Bower packages
+      li JavaScript templates (via Jade)
+      li Jade and HTML pages
+      li Image optimization
+      li Static assets
+      li CoffeeScript and JavaScript files
+      li SCSS compiling 
+        a(href = 'http://bourbon.io/', target = '_blank') (and the Bourbon framework)
+      li RequireJS functionality (including loading in Bower packages)
+      li Easy configurations and environmental customization
+      li Server backing for push state URLs and asset serving
+
+  section
+    h2 Customize it
+    p Because Rygr is built on top of popular 3rd party frameworks, it's easy to customize your project
+    ul
+      li Change build functionality through 
+        a(href = 'http://gulpjs.com/', target = '_blank') Gulp
+      li Manage client dependencies with 
+        a(href = 'http://bower.io/',  target = '_blank') Bower
+      li Extend server behavior with 
+        a(href = 'http://expressjs.com/',  target = '_blank') Express
+      li Manage dependencies with 
+        a(href = 'http://npmjs.org/', target = '_blank') NPM
+
+  section
+    h2 Helpers
+    p Rygr also gives you some basic helpers to make it easy to keep your project up to date
+    ul
+      li
+        | Install NPM and Bower dependencies from a project with 
+        code rygr install
+      li
+        | Update NPM and Bower dependencies with 
+        code rygr update

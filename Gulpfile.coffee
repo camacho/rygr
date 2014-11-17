@@ -20,10 +20,16 @@ alertError = $.notify.onError (error) ->
 # ------------------------------------------------------------------------------
 # Directory management
 # ------------------------------------------------------------------------------
-gulp.task 'clean', ->
-  gulp.src("#{ config.build.dest }/*", read: false)
-    .pipe($.plumber errorHandler: alertError)
-    .pipe $.rimraf force: true
+gulp.task 'clean', (cb) ->
+  fs = require 'fs'
+  dirs = [config.build.dest]
+  glob = []
+
+  for dir in dirs
+    fs.mkdirSync dir unless fs.existsSync dir
+    glob.push "#{ dir }/**", "!#{ dir }"
+
+  require('del') glob, cb
 
 # ------------------------------------------------------------------------------
 # Compile

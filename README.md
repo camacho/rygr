@@ -1,4 +1,4 @@
-rygr
+Rygr
 ===
 <img align="left" height="240" width="104" src="src/template/client/src/images/rygr.png">
 
@@ -41,8 +41,8 @@ Front end:
 * RequireJS modules (including templates)
 * Coffeescript
 * SASS w/Bourbon
-* HAMLC JS templates
-* HAMLC HTML pages
+* Jade JS templates
+* Jade HTML pages
 * Static files
 * Bower for 3rd party dependencies
 

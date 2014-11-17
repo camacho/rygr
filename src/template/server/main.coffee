@@ -20,13 +20,21 @@ dirs =
   assets: path.resolve __dirname, '..', config.client.build.assets
 
 app.set 'dirs', dirs
+app.set 'views', __dirname + '/views'
+app.set 'view engine', 'jade'
+
+app.locals.title = 'Rygr'
+app.locals.livereload = port: config.livereload.port
+app.locals.requirejs = JSON.stringify config.requirejs
 
 # Set middleware
 require('./middleware/main') app
 
 # Start listening
-server = app.listen config.server.port, ->
-  console.log "Server listening on port #{ config.server.port }"
+port = process.env.PORT or config.server.port
+
+server = app.listen port, ->
+  console.log "Server listening on port #{ port }"
 
 # Make sure to shut down the server if the process is terminated
 process.on 'SIGTERM', server.close

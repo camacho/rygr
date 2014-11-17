@@ -3,6 +3,7 @@ path = require 'path'
 module.exports = (app) ->
   (error, req, res, next) ->
     res.status 500
+    console.error error
 
     if req.is('json') or
     path.extname(req.path) is '.json' or

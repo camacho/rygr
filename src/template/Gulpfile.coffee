@@ -24,14 +24,16 @@ alertError = $.notify.onError (error) ->
 # ------------------------------------------------------------------------------
 # Directory management
 # ------------------------------------------------------------------------------
-gulp.task 'clean', ->
-  dir = config.client.build.root
-  fs.mkdirSync dir unless fs.existsSync dir
+gulp.task 'clean', (cb) ->
+  dirs = [config.client.build.root]
+  glob = []
 
-  gulp.src("#{ dir }/*", read: false)
-    .pipe($.plumber errorHandler: alertError)
-    .pipe $.rimraf force: true
+  for dir in dirs
+    fs.mkdirSync dir unless fs.existsSync dir
+    glob.push "#{ dir }/**", "!#{ dir }"
 
+  require('del') glob, cb
+  
 # ------------------------------------------------------------------------------
 # Copy static assets
 # ------------------------------------------------------------------------------
@@ -42,7 +44,7 @@ gulp.task 'public', ->
     .pipe gulp.dest config.client.build.root
 
 gulp.task 'bower', ->
-  gulp.src(require('main-bower-files')())
+  gulp.src(require('main-bower-files')(), base: './bower_components')
     .pipe($.filter '!**/*.scss')
     .pipe($.plumber errorHandler: alertError)
     .pipe gulp.dest config.client.build.assets
@@ -59,8 +61,16 @@ gulp.task 'rename bower css', ->
 gulp.task 'scripts', ->
   coffeeFilter = $.filter '**/*.coffee'
   useSourceMaps = config.client.scripts.sourceMap
-  relativeMapsDir = path.relative config.client.build.assets, config.client.build.maps
-  srcUrlRoot = "/#{path.relative config.client.build.root, config.client.build.src}"
+  relativeMapsDir = path.relative(
+    config.client.build.assets, 
+    config.client.build.maps
+  )
+  srcUrlRoot = "/#{
+    path.relative(
+      config.client.build.root, 
+      config.client.build.src
+    )
+  }"
 
   gulp.src("#{ config.client.src.scripts }/**/*.{js,coffee}")
     .pipe($.plumber errorHandler: alertError)
@@ -72,15 +82,20 @@ gulp.task 'scripts', ->
     .pipe($.if useSourceMaps, $.sourcemaps.init())
     .pipe($.if useSourceMaps, gulp.dest config.client.build.src)
     .pipe($.coffee bare: true)
-    .pipe($.if useSourceMaps, $.sourcemaps.write(relativeMapsDir, includeContent: false, sourceRoot: srcUrlRoot))
+    .pipe($.if useSourceMaps, $.sourcemaps.write(
+      relativeMapsDir, 
+      includeContent: false, 
+      sourceRoot: srcUrlRoot
+    ))
     .pipe(coffeeFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'templates', ->
-  gulp.src("#{ config.client.src.scripts }/**/*.hamlc")
+  gulp.src("#{ config.client.src.scripts }/**/*.jade")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.preprocess context: ENV: ENV)
-    .pipe($.hamlCoffee js: true, placement: 'amd')
+    .pipe($.jade client: true)
+    .pipe($.wrapAmd deps: ['jade'], params: ['jade'])
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'sass', ['public', 'bower', 'images'], ->
@@ -104,18 +119,15 @@ gulp.task 'images', ->
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'html', ->
-  hamlcFilter = $.filter '**/*.hamlc'
+  jadeFilter = $.filter '**/*.jade'
 
-  gulp.src([
-    "#{ config.client.src.html }/**"
-    "!#{ config.client.src.html }/**/_*.hamlc"
-  ])
+  gulp.src("#{ config.client.src.html }/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
     .pipe($.preprocess context: ENV: ENV)
-    .pipe(hamlcFilter)
-    .pipe($.hamlCoffee locals: config)
-    .pipe(hamlcFilter.restore())
+    .pipe(jadeFilter)
+    .pipe($.jade locals: config)
+    .pipe(jadeFilter.restore())
     .pipe(gulp.dest config.client.build.root)
 
 # ------------------------------------------------------------------------------
@@ -129,10 +141,11 @@ gulp.task 'server', ->
     watch: config.server.root
     ext: 'js coffee json'
 
-  nodemon
-    .on('start', -> console.log 'Server has started')
-    .on('quit', -> console.log 'Server has quit')
-    .on('restart', (files) -> console.log 'Server restarted due to: ', files)
+  if ENV isnt 'production'
+    nodemon
+      .on('start', -> console.log 'Server has started')
+      .on('quit', -> console.log 'Server has quit')
+      .on('restart', (files) -> console.log 'Server restarted due to: ', files)
 
 # ------------------------------------------------------------------------------
 # Build
@@ -146,17 +159,26 @@ gulp.task 'build', (cb) ->
   runSequence sequence...
 
 # ------------------------------------------------------------------------------
+# Build
+# ------------------------------------------------------------------------------
+gulp.task 'test', ['build'], (cb) ->
+  # TODO - write tests
+  cb()
+
+# ------------------------------------------------------------------------------
 # Watch
 # ------------------------------------------------------------------------------
 gulp.task 'watch', (cb) ->
+  return cb() unless ENV is 'development'
+
   lr = $.livereload config.livereload.port
   gulp.watch("#{ config.client.build.root }/**")
     .on 'change', (file) -> lr.changed file.path
 
   gulp.watch "#{ config.client.src.scripts }/**/*.{js,coffee}", ['scripts']
-  gulp.watch "#{ config.client.src.scripts }/**/*.hamlc", ['templates']
+  gulp.watch "#{ config.client.src.scripts }/**/*.jade", ['templates']
   gulp.watch "#{ config.client.src.styles }/**/*.scss", ['sass']
-  gulp.watch "#{ config.client.src.html }/**/*.{hamlc, html}", ['html']
+  gulp.watch "#{ config.client.src.html }/**/*.{jade, html}", ['html']
   gulp.watch "#{ config.client.src.images }/**", ['images']
   gulp.watch "#{ config.client.src.public }/**", ['public']
 
