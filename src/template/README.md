@@ -1,39 +1,24 @@
 Rygr
 ======
 
-Simple build tool and server to support thick web clients.
-
-Install NPMs and Bower packages
----
-Rygr provides a simple command to install both NPMs and Bower packages. *It is not neccessary to use this command, and NPMs and Bower packages and can be installed independently using their respective CLIs*
-
-```shell
-# From the project's dir
-rygr install
-```
-
-Update NPMs and Bower packages
----
-rygr provides a simple command to update both NPMs and Bower packages. *It is not neccessary to use this command, and NPMs and Bower packages and can be updated independently using their respective CLIs*
-
-```shell
-# From the project's dir
-rygr update
-```
+Simple scaffolding CLI to setup up a build tool and server to support thick web clients
 
 Stack
 ---
+Rygr generates a new project that is supported by npm, Gulp, and Bower.
+
 Front end:
-* RequireJS modules (including templates)
-* Coffeescript
-* SASS w/Bourbon
+* RequireJS
+* CoffeeScript
+* SASS w/Bourbon (using LibSass)
 * Jade JS templates
 * Jade HTML pages
 * Static files
+* Image optimization
 * Bower for 3rd party dependencies
 
 Server:
-* Express with middleware
+* Express server with middleware and Jade views
 
 The thick client is supported by a simple Express server. It uses middleware
 options to properly load a build of the client and support and push state URLs.
@@ -59,6 +44,9 @@ To build, start the server, and watch for changes:
 gulp
 ```
 
+Rygr also provides a blank test command via Gulp that is accessible by either 
+running `npm test` or `gulp test`.
+
 Configs
 ---
 The configs directory contains basic options for RequireJS, the client,
@@ -70,4 +58,22 @@ automatically be read in and can be access via their filename as follows:
 config.initialize 'config/*.json'
 console.log config.server.port
 #8888
+```
+
+Install npms and Bower packages
+---
+Rygr provides a simple command to install both npms and Bower packages. *It is not neccessary to use this command, and npms and Bower packages and can be installed independently using their respective CLIs*
+
+```shell
+# From the project's dir
+rygr install
+```
+
+Update npms and Bower packages
+---
+Rygr provides a simple command to update both npms and Bower packages. *It is not neccessary to use this command, and npms and Bower packages and can be updated independently using their respective CLIs*
+
+```shell
+# From the project's dir
+rygr update
 ```
