@@ -22,7 +22,8 @@
     "main-bower-files": "^1.0.2",
     "node-bourbon": "^1.2.3",
     "run-sequence": "~0.3.6",
-    "tiny-lr": "0.0.5"
+    "tiny-lr": "0.0.5",
+    "requirejs": "^2.1.15"
   },
   "dependencies": {
     "rygr-util": "^1.0.3",

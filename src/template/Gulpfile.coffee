@@ -25,7 +25,7 @@ alertError = $.notify.onError (error) ->
 # Directory management
 # ------------------------------------------------------------------------------
 gulp.task 'clean', (cb) ->
-  dirs = [config.client.build.root]
+  dirs = [config.client.build.root, config.client.build.tmp]
   glob = []
 
   for dir in dirs
@@ -33,7 +33,7 @@ gulp.task 'clean', (cb) ->
     glob.push "#{ dir }/**", "!#{ dir }"
 
   require('del') glob, cb
-  
+
 # ------------------------------------------------------------------------------
 # Copy static assets
 # ------------------------------------------------------------------------------
@@ -62,12 +62,12 @@ gulp.task 'scripts', ->
   coffeeFilter = $.filter '**/*.coffee'
   useSourceMaps = config.client.scripts.sourceMap
   relativeMapsDir = path.relative(
-    config.client.build.assets, 
+    config.client.build.assets,
     config.client.build.maps
   )
   srcUrlRoot = "/#{
     path.relative(
-      config.client.build.root, 
+      config.client.build.root,
       config.client.build.src
     )
   }"
@@ -83,8 +83,8 @@ gulp.task 'scripts', ->
     .pipe($.if useSourceMaps, gulp.dest config.client.build.src)
     .pipe($.coffee bare: true)
     .pipe($.if useSourceMaps, $.sourcemaps.write(
-      relativeMapsDir, 
-      includeContent: false, 
+      relativeMapsDir,
+      includeContent: false,
       sourceRoot: srcUrlRoot
     ))
     .pipe(coffeeFilter.restore())
@@ -131,6 +131,47 @@ gulp.task 'html', ->
     .pipe(gulp.dest config.client.build.root)
 
 # ------------------------------------------------------------------------------
+# Optimize assets
+# ------------------------------------------------------------------------------
+gulp.task 'optimize', (cb) ->
+  cleanDirSync = (dir) -> require('del').sync "#{ dir }/**"
+
+  cleanDirSync config.client.build.tmp
+
+  rjsConfig = _.extend {}, config.requirejs, {
+    dir: config.client.build.tmp
+    appDir: config.client.build.root
+    baseUrl: path.relative config.client.build.root, config.client.build.assets
+  }
+
+  require('requirejs').optimize(
+    rjsConfig,
+    ((buildResponse) ->
+      cleanDirSync config.client.build.root
+      fs.renameSync config.client.build.tmp, config.client.build.root
+      cleanDirSync config.client.build.tmp
+      cb()
+    ), ((error) ->
+      try cleanDirSync config.client.build.tmp
+      cb error
+    )
+  )
+
+# ------------------------------------------------------------------------------
+# Build
+# ------------------------------------------------------------------------------
+gulp.task 'build', (cb) ->
+  sequence = [
+    'clean'
+    ['bower', 'scripts', 'templates', 'images', 'public', 'html', 'sass']
+  ]
+
+  sequence.push 'optimize' if ENV is 'production'
+  sequence.push cb
+
+  runSequence sequence...
+
+# ------------------------------------------------------------------------------
 # Server
 # ------------------------------------------------------------------------------
 gulp.task 'server', ->
@@ -148,18 +189,7 @@ gulp.task 'server', ->
       .on('restart', (files) -> console.log 'Server restarted due to: ', files)
 
 # ------------------------------------------------------------------------------
-# Build
-# ------------------------------------------------------------------------------
-gulp.task 'build', (cb) ->
-  sequence = [
-    'clean'
-    ['bower', 'scripts', 'templates', 'images', 'public', 'html', 'sass']
-    cb
-  ]
-  runSequence sequence...
-
-# ------------------------------------------------------------------------------
-# Build
+# Test
 # ------------------------------------------------------------------------------
 gulp.task 'test', ['build'], (cb) ->
   # TODO - write tests

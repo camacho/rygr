@@ -1,11 +1,11 @@
-Rygr
+<!-- @echo PROJECT_NAME -->
 ======
 
-Simple scaffolding CLI to setup up a build tool and server to support thick web clients
+Simple build tool and server to support thick web clients
 
 Stack
 ---
-Rygr generates a new project that is supported by npm, Gulp, and Bower.
+Project is supported by npm, Gulp, and Bower.
 
 Front end:
 * RequireJS
@@ -37,6 +37,8 @@ gulp build
 To start the server:
 ```shell
 gulp server
+# or
+npm start
 ```
 
 To build, start the server, and watch for changes:
@@ -44,14 +46,20 @@ To build, start the server, and watch for changes:
 gulp
 ```
 
-Rygr also provides a blank test command via Gulp that is accessible by either 
-running `npm test` or `gulp test`.
+To test:
+```shell
+gulp test
+# or
+npm test
+```
+
+** TODO: Add tests **
 
 Configs
 ---
 The configs directory contains basic options for RequireJS, the client,
-livereload, and the server. Feel free to add additional configs. They will
-automatically be read in and can be access via their filename as follows:
+livereload, and the server, more can be added as needed. Config files are
+automatically read in and made accessible via their filename as follows:
 
 ```coffee
 {config} = require 'rygr-utils'
@@ -60,20 +68,20 @@ console.log config.server.port
 #8888
 ```
 
-Install npms and Bower packages
+Install
 ---
-Rygr provides a simple command to install both npms and Bower packages. *It is not neccessary to use this command, and npms and Bower packages and can be installed independently using their respective CLIs*
+To install all dependencies for a first load:
 
 ```shell
 # From the project's dir
-rygr install
+npm install && bower install
 ```
 
 Update npms and Bower packages
 ---
-Rygr provides a simple command to update both npms and Bower packages. *It is not neccessary to use this command, and npms and Bower packages and can be updated independently using their respective CLIs*
+To update all dependencies:
 
 ```shell
 # From the project's dir
-rygr update
+npm update && bower update
 ```

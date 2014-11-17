@@ -83,6 +83,14 @@ module.exports = (options, done) ->
       catch e
         return next err if err
 
+    readme = path.join  options.dir, 'README.md'
+
+    require('preprocess').preprocessFileSync(
+      readme,
+      readme,
+      PROJECT_NAME: options.projectName
+    )
+
     log colors.green 'Project configured'
     next()
 

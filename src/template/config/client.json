@@ -17,6 +17,7 @@
   },
   "build": {
     "root": "client/build",
+    "tmp": "client/tmp",
     "assets": "client/build/assets",
     "maps": "client/build/assets/_maps",
     "src": "client/build/assets/_src"
