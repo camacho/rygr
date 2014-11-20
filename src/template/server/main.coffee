@@ -1,40 +1,15 @@
-{file, config} = require 'rygr-util'
-path = require 'path'
 express = require 'express'
 _ = require 'underscore'
-
-# Load in configs
-paths = ["#{path.join(__dirname, '..', 'config')}/*.json", 'config/*.json']
-config.initialize paths
-
-# Call initializers
-require('./initializers/main')()
 
 # Setup Express app
 app = express()
 
-# Setup directories
-dirs =
-  base: __dirname
-  public: path.resolve __dirname, '..', config.client.build.root
-  assets: path.resolve __dirname, '..', config.client.build.assets
-
-app.set 'dirs', dirs
-app.set 'views', __dirname + '/views'
-app.set 'view engine', 'jade'
-
-app.locals.title = 'Rygr'
-app.locals.livereload = port: config.livereload.port
-app.locals.requirejs = JSON.stringify config.requirejs
-
-# Set middleware
-require('./middleware/main') app
+# Call initializers
+require('./initializers/main') app
 
 # Start listening
-port = process.env.PORT or config.server.port
-
-server = app.listen port, ->
-  console.log "Server listening on port #{ port }"
+server = app.listen app.get('server').port, ->
+  console.log "Server listening on port #{ app.get('server').port }"
 
 # Make sure to shut down the server if the process is terminated
 process.on 'SIGTERM', server.close

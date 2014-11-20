@@ -26,14 +26,15 @@
     "requirejs": "^2.1.15"
   },
   "dependencies": {
-    "rygr-util": "^1.0.3",
     "coffee-script": "^1.8.0",
     "express": "^4.10.2",
-    "nodemon": "^1.2.1",
-    "underscore": "~1.6.0",
-    "underscore.string": "~2.3.3",
     "jade": "^1.7.0",
-    "require-directory": "^2.0.0"
+    "nodemon": "^1.2.1",
+    "require-directory": "^2.0.0",
+    "rygr-util": "^1.0.3",
+    "serve-static": "^1.7.1",
+    "underscore": "~1.6.0",
+    "underscore.string": "~2.3.3"
   },
   "scripts": {
     "start": "coffee server/main.coffee",

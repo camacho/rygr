@@ -1,5 +1,4 @@
 path = require 'path'
-express = require 'express'
+serveStatic = require 'serve-static'
 
-module.exports = (app) -> 
-  express.static app.get('dirs').public
+module.exports = (app) -> serveStatic app.get('dirs').public, index: false

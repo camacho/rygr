@@ -1,3 +1,5 @@
-module.exports = ->
-  # Add files to be included here for initialization
+module.exports = (app) ->
   require './underscore'
+  require('./config') app
+  require('./views') app
+  require('./middleware') app
