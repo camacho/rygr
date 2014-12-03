@@ -19,18 +19,22 @@ config.initialize 'config/*.json'
 # ------------------------------------------------------------------------------
 alertError = $.notify.onError (error) ->
   message = error?.message or error?.toString() or 'Something went wrong'
-  "Error: #{ message }"
+  "Error: #{message}"
+
+cleanDirSync = (dir) ->
+  require('del').sync "#{dir}/**"
 
 # ------------------------------------------------------------------------------
 # Directory management
 # ------------------------------------------------------------------------------
 gulp.task 'clean', (cb) ->
-  dirs = [config.client.build.root, config.client.build.tmp]
+  fs = require 'fs'
+  dirs = [config.client.build.root]
   glob = []
 
   for dir in dirs
     fs.mkdirSync dir unless fs.existsSync dir
-    glob.push "#{ dir }/**", "!#{ dir }"
+    glob.push "#{dir}/**", "!#{dir}"
 
   require('del') glob, cb
 
@@ -38,16 +42,16 @@ gulp.task 'clean', (cb) ->
 # Copy static assets
 # ------------------------------------------------------------------------------
 gulp.task 'public', ->
-  gulp.src("#{ config.client.src.public }/**")
+  gulp.src("#{config.client.src.public}/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
-    .pipe gulp.dest config.client.build.root
+    .pipe(gulp.dest config.client.build.root)
 
 gulp.task 'bower', ->
   gulp.src(require('main-bower-files')(), base: './bower_components')
     .pipe($.filter '!**/*.scss')
     .pipe($.plumber errorHandler: alertError)
-    .pipe gulp.dest config.client.build.assets
+    .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'rename bower css', ->
   gulp.src("bower_components/**/*.css")
@@ -61,18 +65,17 @@ gulp.task 'rename bower css', ->
 gulp.task 'scripts', ->
   coffeeFilter = $.filter '**/*.coffee'
   useSourceMaps = config.client.scripts.sourceMap
+
   relativeMapsDir = path.relative(
     config.client.build.assets,
     config.client.build.maps
   )
-  srcUrlRoot = "/#{
-    path.relative(
-      config.client.build.root,
-      config.client.build.src
-    )
-  }"
 
-  gulp.src("#{ config.client.src.scripts }/**/*.{js,coffee}")
+  srcUrlRoot = "/#{
+    path.relative config.client.build.root, config.client.build.src
+}"
+
+  gulp.src("#{config.client.src.scripts}/**/*.{js,coffee}")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.assets)
     .pipe($.preprocess context: ENV: ENV)
@@ -82,16 +85,18 @@ gulp.task 'scripts', ->
     .pipe($.if useSourceMaps, $.sourcemaps.init())
     .pipe($.if useSourceMaps, gulp.dest config.client.build.src)
     .pipe($.coffee bare: true)
-    .pipe($.if useSourceMaps, $.sourcemaps.write(
-      relativeMapsDir,
-      includeContent: false,
-      sourceRoot: srcUrlRoot
+    .pipe($.if(
+      useSourceMaps,
+      $.sourcemaps.write(
+        relativeMapsDir,
+        includeContent: false, sourceRoot: srcUrlRoot
+      )
     ))
     .pipe(coffeeFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'templates', ->
-  gulp.src("#{ config.client.src.scripts }/**/*.jade")
+  gulp.src("#{config.client.src.scripts}/**/*.jade")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.preprocess context: ENV: ENV)
     .pipe($.jade client: true)
@@ -99,29 +104,33 @@ gulp.task 'templates', ->
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'sass', ['public', 'bower', 'images'], ->
-  gulp.src("#{ config.client.src.styles }/main.scss")
+  gulp.src("#{config.client.src.styles}/main.scss")
     .pipe($.sass
       onError: alertError
       includePaths: require('node-bourbon').with(
         config.client.build.root,
-        'bower_components'
+        './bower_components'
       )
-      imagePath: config.client.sass.imagePath
+      imagePath: "/#{path.basename config.client.build.assets}"
       sourceMap: config.client.sass.sourceMap
     )
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'images', ->
-  gulp.src("#{ config.client.src.images }/**")
+  gulp.src("#{config.client.src.images}/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.assets)
-    .pipe($.imagemin())
+    .pipe($.imagemin
+      optimizationLevel: if ENV is 'production' then 7 else 2
+      progressive: true
+      interlaced: true
+    )
     .pipe(gulp.dest config.client.build.assets)
 
 gulp.task 'html', ->
   jadeFilter = $.filter '**/*.jade'
 
-  gulp.src("#{ config.client.src.html }/**")
+  gulp.src("#{config.client.src.html}/**")
     .pipe($.plumber errorHandler: alertError)
     .pipe($.changed config.client.build.root)
     .pipe($.preprocess context: ENV: ENV)
@@ -133,29 +142,39 @@ gulp.task 'html', ->
 # ------------------------------------------------------------------------------
 # Optimize assets
 # ------------------------------------------------------------------------------
-gulp.task 'optimize', (cb) ->
-  cleanDirSync = (dir) -> require('del').sync "#{ dir }/**"
-
+gulp.task 'rjs', (cb) ->
   cleanDirSync config.client.build.tmp
 
   rjsConfig = _.extend {}, config.requirejs, {
     dir: config.client.build.tmp
-    appDir: config.client.build.root
-    baseUrl: path.relative config.client.build.root, config.client.build.assets
-  }
+    appDir: config.client.build.assets
+    baseUrl: './'
+}
 
   require('requirejs').optimize(
     rjsConfig,
     ((buildResponse) ->
-      cleanDirSync config.client.build.root
-      fs.renameSync config.client.build.tmp, config.client.build.root
-      cleanDirSync config.client.build.tmp
+      cleanDirSync config.client.build.assets
+      fs.renameSync config.client.build.tmp, config.client.build.assets
       cb()
     ), ((error) ->
       try cleanDirSync config.client.build.tmp
       cb error
     )
   )
+
+  undefined
+
+gulp.task 'gzip', ->
+  gulp.src([
+    "#{config.client.build.root}/**"
+    "!#{config.client.build.manifest}"
+  ])
+    .pipe($.gzip())
+    .pipe(gulp.dest config.client.build.root)
+
+gulp.task 'productionize', (cb) ->
+  runSequence 'rjs', 'gzip', cb
 
 # ------------------------------------------------------------------------------
 # Build
@@ -166,7 +185,7 @@ gulp.task 'build', (cb) ->
     ['bower', 'scripts', 'templates', 'images', 'public', 'html', 'sass']
   ]
 
-  sequence.push 'optimize' if ENV is 'production'
+  sequence.push 'productionize' if ENV is 'production'
   sequence.push cb
 
   runSequence sequence...
@@ -180,7 +199,7 @@ gulp.task 'server', ->
   nodemon
     script: config.server.main
     watch: config.server.root
-    ext: 'js coffee json'
+    ext: 'js coffee json jade'
 
   if ENV isnt 'production'
     nodemon
@@ -202,15 +221,15 @@ gulp.task 'watch', (cb) ->
   return cb() unless ENV is 'development'
 
   lr = $.livereload config.livereload.port
-  gulp.watch("#{ config.client.build.root }/**")
+  gulp.watch("#{config.client.build.root}/**")
     .on 'change', (file) -> lr.changed file.path
 
-  gulp.watch "#{ config.client.src.scripts }/**/*.{js,coffee}", ['scripts']
-  gulp.watch "#{ config.client.src.scripts }/**/*.jade", ['templates']
-  gulp.watch "#{ config.client.src.styles }/**/*.scss", ['sass']
-  gulp.watch "#{ config.client.src.html }/**/*.{jade, html}", ['html']
-  gulp.watch "#{ config.client.src.images }/**", ['images']
-  gulp.watch "#{ config.client.src.public }/**", ['public']
+  gulp.watch "#{config.client.src.scripts}/**/*.{js,coffee}", ['scripts']
+  gulp.watch "#{config.client.src.scripts}/**/*.jade", ['templates']
+  gulp.watch "#{config.client.src.styles}/**/*.scss", ['sass']
+  gulp.watch "#{config.client.src.html}/**/*.{jade, html}", ['html']
+  gulp.watch "#{config.client.src.images}/**", ['images']
+  gulp.watch "#{config.client.src.public}/**", ['public']
 
   cb()
 

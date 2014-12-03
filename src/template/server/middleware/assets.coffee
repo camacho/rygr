@@ -1,4 +1,7 @@
 path = require 'path'
-serveStatic = require 'serve-static'
+assets = require 'connect-gzip-static'
 
-module.exports = (app) -> serveStatic app.get('dirs').public, index: false
+maxAge = 100*60*60*24 # 1 day
+
+module.exports = (app) ->
+  assets app.get('dirs').public, index: false, maxAge: maxAge

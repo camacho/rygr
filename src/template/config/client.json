@@ -9,8 +9,7 @@
     "images": "client/src/images"
   },
   "sass": {
-    "sourceMap": false,
-    "imagePath": "client/src/images"
+    "sourceMap": false
   },
   "scripts": {
     "sourceMap": false
