@@ -60,7 +60,7 @@ gulp.task 'compile', ->
     "#{ config.build.src }/{bin,commands}/**/*.coffee"
   ])
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.build.dest)
+    .pipe($.changed config.build.dest, extension: '.js')
     .pipe($.coffeelint optFile: './.coffeelintrc')
     .pipe($.coffeelint.reporter())
     .pipe($.coffee bare: true)

@@ -73,11 +73,11 @@ gulp.task 'scripts', ->
 
   srcUrlRoot = "/#{
     path.relative config.client.build.root, config.client.build.src
-}"
+  }"
 
   gulp.src("#{config.client.src.scripts}/**/*.{js,coffee}")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.assets)
+    .pipe($.changed config.client.build.assets, extension: '.js')
     .pipe($.preprocess context: ENV: ENV)
     .pipe(coffeeFilter)
     .pipe($.coffeelint optFile: './.coffeelintrc')
@@ -98,6 +98,7 @@ gulp.task 'scripts', ->
 gulp.task 'templates', ->
   gulp.src("#{config.client.src.scripts}/**/*.jade")
     .pipe($.plumber errorHandler: alertError)
+    .pipe($.changed config.client.build.assets, extension: '.js')
     .pipe($.preprocess context: ENV: ENV)
     .pipe($.jade client: true)
     .pipe($.wrapAmd deps: ['jade'], params: ['jade'])
@@ -132,7 +133,7 @@ gulp.task 'html', ->
 
   gulp.src("#{config.client.src.html}/**")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.root)
+    .pipe($.changed config.client.build.root, extension: '.html')
     .pipe($.preprocess context: ENV: ENV)
     .pipe(jadeFilter)
     .pipe($.jade locals: config)
