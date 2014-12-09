@@ -1,6 +1,6 @@
 {
   "name": "rygr",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "description": "Rygr",
   "repository": {
     "type": "git",
@@ -44,7 +44,7 @@
     "open": "0.0.5",
     "preprocess": "^2.1.0",
     "pretty-hrtime": "^0.2.1",
-    "rygr-util": "^1.1.1",
+    "rygr-util": "^1.2.0",
     "semver": "^3.0.1",
     "underscore": "^1.6.0"
   }
