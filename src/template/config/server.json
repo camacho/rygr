@@ -1,5 +1,0 @@
-{
-  "root": "server",
-  "main": "server/main.coffee",
-  "port": 8888
-}

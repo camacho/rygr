@@ -5,7 +5,7 @@ _ = require 'underscore'
 app = express()
 
 # Call initializers
-require('./initializers/main') app
+require('./initializers/index') app
 
 # Start listening
 server = app.listen app.get('server').port, ->

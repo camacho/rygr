@@ -6,6 +6,6 @@ module.exports = (app) ->
 
   (req, res, next) ->
     if req.accepts('html') and not _(req.path).startsWith assetsDir
-      res.render 'client'
+      res.render 'index'
     else
       next()

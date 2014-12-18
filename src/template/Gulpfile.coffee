@@ -10,9 +10,7 @@ fs = require 'fs'
 _ = require 'underscore'
 
 ENV = process.env.NODE_ENV or 'development'
-
-{config} = require 'rygr-util'
-config.initialize 'config/*.json'
+config = require './config/index'
 
 # ------------------------------------------------------------------------------
 # Custom vars and methods
@@ -42,16 +40,19 @@ gulp.task 'clean', (cb) ->
 # Copy static assets
 # ------------------------------------------------------------------------------
 gulp.task 'public', ->
-  gulp.src("#{config.client.src.public}/**")
+  gulp.src("#{config.client.src.public}/**/*.*")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.root)
-    .pipe(gulp.dest config.client.build.root)
+    .pipe($.changed config.client.build.public)
+    .pipe(gulp.dest config.client.build.public)
+    .pipe($.livereload())
 
 gulp.task 'bower', ->
   gulp.src(require('main-bower-files')(), base: './bower_components')
-    .pipe($.filter '!**/*.scss')
     .pipe($.plumber errorHandler: alertError)
-    .pipe(gulp.dest config.client.build.assets)
+    .pipe($.changed config.client.build.vendor)
+    .pipe($.filter '**/*.!(scss)')
+    .pipe(gulp.dest config.client.build.vendor)
+    .pipe($.livereload())
 
 gulp.task 'rename bower css', ->
   gulp.src("bower_components/**/*.css")
@@ -72,7 +73,7 @@ gulp.task 'scripts', ->
   )
 
   srcUrlRoot = "/#{
-    path.relative config.client.build.root, config.client.build.src
+    path.relative config.client.build.public, config.client.build.src
   }"
 
   gulp.src("#{config.client.src.scripts}/**/*.{js,coffee}")
@@ -94,6 +95,7 @@ gulp.task 'scripts', ->
     ))
     .pipe(coffeeFilter.restore())
     .pipe(gulp.dest config.client.build.assets)
+    .pipe($.livereload())
 
 gulp.task 'templates', ->
   gulp.src("#{config.client.src.scripts}/**/*.jade")
@@ -103,42 +105,48 @@ gulp.task 'templates', ->
     .pipe($.jade client: true)
     .pipe($.wrapAmd deps: ['jade'], params: ['jade'])
     .pipe(gulp.dest config.client.build.assets)
+    .pipe($.livereload())
 
 gulp.task 'sass', ['public', 'bower', 'images'], ->
   gulp.src("#{config.client.src.styles}/main.scss")
     .pipe($.sass
       onError: alertError
       includePaths: require('node-bourbon').with(
-        config.client.build.root,
+        config.client.build.public,
         './bower_components'
       )
       imagePath: "/#{path.basename config.client.build.assets}"
       sourceMap: config.client.sass.sourceMap
     )
     .pipe(gulp.dest config.client.build.assets)
+    .pipe($.livereload())
 
 gulp.task 'images', ->
-  gulp.src("#{config.client.src.images}/**")
-    .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.assets)
-    .pipe($.imagemin
-      optimizationLevel: if ENV is 'production' then 7 else 2
+  if ENV is 'production'
+    imageMinification = $.imagemin
+      optimizationLevel: 7
       progressive: true
       interlaced: true
-    )
+
+  gulp.src("#{config.client.src.images}/**/*.*")
+    .pipe($.plumber errorHandler: alertError)
+    .pipe($.changed config.client.build.assets)
+    .pipe($.if (ENV is 'production'), imageMinification or ->)
     .pipe(gulp.dest config.client.build.assets)
+    .pipe($.livereload())
 
 gulp.task 'html', ->
   jadeFilter = $.filter '**/*.jade'
 
-  gulp.src("#{config.client.src.html}/**")
+  gulp.src("#{config.client.src.html}/**/*.*")
     .pipe($.plumber errorHandler: alertError)
-    .pipe($.changed config.client.build.root, extension: '.html')
+    .pipe($.changed config.client.build.public, extension: '.html')
     .pipe($.preprocess context: ENV: ENV)
     .pipe(jadeFilter)
     .pipe($.jade locals: config)
     .pipe(jadeFilter.restore())
-    .pipe(gulp.dest config.client.build.root)
+    .pipe(gulp.dest config.client.build.public)
+    .pipe($.livereload())
 
 # ------------------------------------------------------------------------------
 # Optimize assets
@@ -168,11 +176,11 @@ gulp.task 'rjs', (cb) ->
 
 gulp.task 'gzip', ->
   gulp.src([
-    "#{config.client.build.root}/**"
+    "#{config.client.build.public}/**"
     "!#{config.client.build.manifest}"
   ])
     .pipe($.gzip())
-    .pipe(gulp.dest config.client.build.root)
+    .pipe(gulp.dest config.client.build.public)
 
 gulp.task 'productionize', (cb) ->
   runSequence 'rjs', 'gzip', cb
@@ -221,9 +229,9 @@ gulp.task 'test', ['build'], (cb) ->
 gulp.task 'watch', (cb) ->
   return cb() unless ENV is 'development'
 
-  lr = $.livereload config.livereload.port
-  gulp.watch("#{config.client.build.root}/**")
-    .on 'change', (file) -> lr.changed file.path
+  $.livereload.listen
+    port: config.livereload.port
+    basePath: config.client.build.public
 
   gulp.watch "#{config.client.src.scripts}/**/*.{js,coffee}", ['scripts']
   gulp.watch "#{config.client.src.scripts}/**/*.jade", ['templates']
